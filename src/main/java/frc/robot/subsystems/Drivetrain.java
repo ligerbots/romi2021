@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
+import edu.wpi.first.wpilibj.simulation.SimDeviceSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
@@ -78,6 +79,14 @@ public class Drivetrain extends SubsystemBase {
           Units.inchesToMeters(kWheelDiameterInch) / 2.0, 
           null);
 
+      // The encoder and gyro angle sims let us set simulated sensor readings
+      m_leftEncoderSim = new EncoderSim(m_leftEncoder);
+      m_rightEncoderSim = new EncoderSim(m_rightEncoder);
+
+      // get the angle simulation variable
+      // SimDevice is found by name and index, like "name[index]"
+      m_gyroAngleSim = new SimDeviceSim("Gyro:RomiGyro").getDouble("angle_z");
+          
       m_fieldSim = new Field2d();
       SmartDashboard.putData("Field", m_fieldSim);
     }
