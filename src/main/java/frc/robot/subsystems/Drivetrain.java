@@ -19,11 +19,12 @@ import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
-import frc.robot.Constants;
-import frc.robot.sensors.RomiGyro;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpiutil.math.Matrix;
 import edu.wpi.first.wpiutil.math.Nat;
+
+import frc.robot.Constants;
+import frc.robot.sensors.RomiGyro;
 
 public class Drivetrain extends SubsystemBase {
   private static final double kCountsPerRevolution = 1440.0;
@@ -50,33 +51,35 @@ public class Drivetrain extends SubsystemBase {
   // Set up the BuiltInAccelerometer
   private final BuiltInAccelerometer m_accelerometer = new BuiltInAccelerometer();
 
-    // Simulation classes
-    private DifferentialDrivetrainSim drivetrainSimulator;
-    private EncoderSim leftEncoderSim;
-    private EncoderSim rightEncoderSim;
-  // The Field2d class simulates the field in the sim GUI. Note that we can have only one instance!
-  private Field2d fieldSim;
-  private SimDouble gyroAngleSim;
+  // Simulation classes
+  private DifferentialDrivetrainSim m_drivetrainSimulator;
+  private EncoderSim m_leftEncoderSim;
+  private EncoderSim m_rightEncoderSim;
+  // The Field2d class simulates the field in the sim GUI. Note that we can have
+  // only one instance!
+  private Field2d m_fieldSim;
+  private SimDouble m_gyroAngleSim;
 
-/** Creates a new Drivetrain. */
+  /** Creates a new Drivetrain. */
   public Drivetrain() {
     // Use inches as unit for encoder distances
     m_leftEncoder.setDistancePerPulse((Math.PI * kWheelDiameterInch) / kCountsPerRevolution);
     m_rightEncoder.setDistancePerPulse((Math.PI * kWheelDiameterInch) / kCountsPerRevolution);
     resetEncoders();
+    
     if (RobotBase.isSimulation()) {
       // If our robot is simulated
       // This class simulates our drivetrain's motion around the field.
-      drivetrainSimulator = new DifferentialDrivetrainSim(
-            Constants.kDrivetrainPlant,
-            Constants.kDriveGearbox,
-            Constants.kDriveGearing,
-            kTrackWidth,
-            Units.inchesToMeters(kWheelDiameterInch) / 2.0,
-            null);
+      m_drivetrainSimulator = new DifferentialDrivetrainSim(
+          Constants.kDrivetrainPlant,
+          Constants.kDriveGearbox,
+          Constants.kDriveGearing, 
+          kTrackWidth, 
+          Units.inchesToMeters(kWheelDiameterInch) / 2.0, 
+          null);
 
-      fieldSim = new Field2d();
-      SmartDashboard.putData("Field", fieldSim);
+      m_fieldSim = new Field2d();
+      SmartDashboard.putData("Field", m_fieldSim);
     }
   }
 
@@ -109,32 +112,32 @@ public class Drivetrain extends SubsystemBase {
     return (getLeftDistanceInch() + getRightDistanceInch()) / 2.0;
   }
 
-  public Pose2d getPose () {
+  public Pose2d getPose() {
     return odometry.getPoseMeters();
-}
+  }
 
-public void setPose(Pose2d pose) {
+  public void setPose(Pose2d pose) {
     if (RobotBase.isSimulation()) {
-        // This is a bit hokey, but if the Robot jumps on the field, we need
-        //   to reset the internal state of the DriveTrainSimulator.
-        //   No method to do it, but we can reset the state variables.
-        //   NOTE: this assumes the robot is not moving, since we are not resetting
-        //   the rate variables.
-        drivetrainSimulator.setState(new Matrix<>(Nat.N7(), Nat.N1()));
+      // This is a bit hokey, but if the Robot jumps on the field, we need
+      // to reset the internal state of the DriveTrainSimulator.
+      // No method to do it, but we can reset the state variables.
+      // NOTE: this assumes the robot is not moving, since we are not resetting
+      // the rate variables.
+      m_drivetrainSimulator.setState(new Matrix<>(Nat.N7(), Nat.N1()));
 
-        // reset the GyroSim to match the driveTrainSim
-        // do it early so that "real" odometry matches this value
-        gyroAngleSim.set(-drivetrainSimulator.getHeading().getDegrees());
-        fieldSim.setRobotPose(pose);
+      // reset the GyroSim to match the driveTrainSim
+      // do it early so that "real" odometry matches this value
+      m_gyroAngleSim.set(-m_drivetrainSimulator.getHeading().getDegrees());
+      m_fieldSim.setRobotPose(pose);
     }
 
     // The left and right encoders MUST be reset when odometry is reset
     m_leftEncoder.reset();
     m_rightEncoder.reset();
     odometry.resetPosition(pose, Rotation2d.fromDegrees(getGyroAngleZ()));
-}
-  
-/**
+  }
+
+  /**
    * The acceleration in the X-axis.
    *
    * @return The acceleration of the Romi along the X-axis in Gs
@@ -201,21 +204,22 @@ public void setPose(Pose2d pose) {
 
   public void simulationPeriodic() {
     // To update our simulation, we set motor voltage inputs, update the simulation,
-    // and write the simulated positions and velocities to our simulated encoder and gyro.
+    // and write the simulated positions and velocities to our simulated encoder and
+    // gyro.
     // We negate the right side so that positive voltages make the right side
     // move forward.
-    drivetrainSimulator.setInputs(-m_leftMotor.get() * RobotController.getBatteryVoltage(),
-      m_rightMotor.get() * RobotController.getBatteryVoltage());
-    drivetrainSimulator.update(0.020);
+    m_drivetrainSimulator.setInputs(-m_leftMotor.get() * RobotController.getBatteryVoltage(),
+        m_rightMotor.get() * RobotController.getBatteryVoltage());
+    m_drivetrainSimulator.update(0.020);
 
-    leftEncoderSim.setDistance(drivetrainSimulator.getLeftPositionMeters());
-    leftEncoderSim.setRate(drivetrainSimulator.getLeftVelocityMetersPerSecond());
+    m_leftEncoderSim.setDistance(m_drivetrainSimulator.getLeftPositionMeters());
+    m_leftEncoderSim.setRate(m_drivetrainSimulator.getLeftVelocityMetersPerSecond());
 
-    rightEncoderSim.setDistance(drivetrainSimulator.getRightPositionMeters());
-    rightEncoderSim.setRate(drivetrainSimulator.getRightVelocityMetersPerSecond());
+    m_rightEncoderSim.setDistance(m_drivetrainSimulator.getRightPositionMeters());
+    m_rightEncoderSim.setRate(m_drivetrainSimulator.getRightVelocityMetersPerSecond());
 
-    gyroAngleSim.set(-drivetrainSimulator.getHeading().getDegrees());
+    m_gyroAngleSim.set(-m_drivetrainSimulator.getHeading().getDegrees());
 
-    fieldSim.setRobotPose(getPose());
+    m_fieldSim.setRobotPose(getPose());
   }
 }
