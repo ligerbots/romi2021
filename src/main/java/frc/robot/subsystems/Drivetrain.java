@@ -217,8 +217,8 @@ public class Drivetrain extends SubsystemBase {
     // gyro.
     // We negate the right side so that positive voltages make the right side
     // move forward.
-    m_drivetrainSimulator.setInputs(-m_leftMotor.get() * RobotController.getBatteryVoltage(),
-        m_rightMotor.get() * RobotController.getBatteryVoltage());
+    m_drivetrainSimulator.setInputs(m_leftMotor.get() * RobotController.getBatteryVoltage(),
+        -m_rightMotor.get() * RobotController.getBatteryVoltage());
     m_drivetrainSimulator.update(0.020);
 
     m_leftEncoderSim.setDistance(m_drivetrainSimulator.getLeftPositionMeters());
@@ -227,7 +227,7 @@ public class Drivetrain extends SubsystemBase {
     m_rightEncoderSim.setDistance(m_drivetrainSimulator.getRightPositionMeters());
     m_rightEncoderSim.setRate(m_drivetrainSimulator.getRightVelocityMetersPerSecond());
 
-    m_gyroAngleSim.set(-m_drivetrainSimulator.getHeading().getDegrees());
+    m_gyroAngleSim.set(m_drivetrainSimulator.getHeading().getDegrees());
 
     m_fieldSim.setRobotPose(getPose());
   }
