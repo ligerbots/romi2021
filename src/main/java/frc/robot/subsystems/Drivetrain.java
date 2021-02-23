@@ -30,7 +30,7 @@ import frc.robot.sensors.RomiGyro;
 public class Drivetrain extends SubsystemBase {
   private static final double kCountsPerRevolution = 1440.0;
   private static final double kWheelDiameterInch = 2.75591; // 70 mm
-  private static final double kTrackWidth = Units.inchesToMeters(9.0);
+  private static final double kTrackWidth = 9.0; // inches
 
   // The Romi has the left and right motors set to
   // PWM channels 0 and 1 respectively
@@ -76,7 +76,7 @@ public class Drivetrain extends SubsystemBase {
           Constants.kDriveGearbox,
           Constants.kDriveGearing, 
           kTrackWidth, 
-          Units.inchesToMeters(kWheelDiameterInch) / 2.0, 
+          kWheelDiameterInch / 2.0, 
           null);
 
       // The encoder and gyro angle sims let us set simulated sensor readings
