@@ -30,6 +30,7 @@ public class TurnDegrees extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    System.out.println("Turn degrees init");
     // Set motors to stop, read encoder values for starting point
     m_drive.arcadeDrive(0, 0);
     m_drive.resetEncoders();
@@ -45,6 +46,7 @@ public class TurnDegrees extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     m_drive.arcadeDrive(0, 0);
+    System.out.println("Turn degrees end");
   }
 
   // Returns true when the command should end.

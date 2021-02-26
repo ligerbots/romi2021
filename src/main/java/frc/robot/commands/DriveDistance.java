@@ -30,6 +30,7 @@ public class DriveDistance extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    System.out.println("Drive distance init");
     m_drive.arcadeDrive(0, 0);
     m_drive.resetEncoders();
   }
@@ -44,6 +45,7 @@ public class DriveDistance extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     m_drive.arcadeDrive(0, 0);
+    System.out.println("Drive distance end");
   }
 
   // Returns true when the command should end.
