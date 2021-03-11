@@ -8,8 +8,12 @@ import edu.wpi.first.wpilibj.BuiltInAccelerometer;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import frc.robot.sensors.RomiGyro;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import frc.robot.sensors.RomiGyro;
 
 public class Drivetrain extends SubsystemBase {
   private static final double kCountsPerRevolution = 1440.0;
@@ -27,6 +31,7 @@ public class Drivetrain extends SubsystemBase {
 
   // Set up the differential drive controller
   private final DifferentialDrive m_diffDrive = new DifferentialDrive(m_leftMotor, m_rightMotor);
+  private DifferentialDriveOdometry m_odometry;
 
   // Set up the RomiGyro
   private final RomiGyro m_gyro = new RomiGyro();
@@ -40,6 +45,23 @@ public class Drivetrain extends SubsystemBase {
     m_leftEncoder.setDistancePerPulse((Math.PI * kWheelDiameterInch) / kCountsPerRevolution);
     m_rightEncoder.setDistancePerPulse((Math.PI * kWheelDiameterInch) / kCountsPerRevolution);
     resetEncoders();
+
+    m_odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(0));
+  }
+
+  public Pose2d getPose() {
+    return m_odometry.getPoseMeters();
+  }
+
+  public void setPose(Pose2d pose) {
+    // The left and right encoders MUST be reset when odometry is reset
+    m_leftEncoder.reset();
+    m_rightEncoder.reset();
+    m_odometry.resetPosition(pose, Rotation2d.fromDegrees(getGyroAngleZ()));
+  }
+
+  public double getHeading() {
+    return m_odometry.getPoseMeters().getRotation().getDegrees();
   }
 
   public void arcadeDrive(double xaxisSpeed, double zaxisRotate) {
@@ -133,5 +155,6 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    m_odometry.update(Rotation2d.fromDegrees(getGyroAngleZ()), m_leftEncoder.getDistance(), m_rightEncoder.getDistance());
   }
 }
