@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.sensors.RomiGyro;
@@ -57,7 +59,7 @@ public class Drivetrain extends SubsystemBase {
     // The left and right encoders MUST be reset when odometry is reset
     m_leftEncoder.reset();
     m_rightEncoder.reset();
-    m_odometry.resetPosition(pose, Rotation2d.fromDegrees(getGyroAngleZ()));
+    m_odometry.resetPosition(pose, m_gyro.getRotation2d());
   }
 
   public double getHeading() {
@@ -66,6 +68,16 @@ public class Drivetrain extends SubsystemBase {
 
   public void arcadeDrive(double xaxisSpeed, double zaxisRotate) {
     m_diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate);
+  }
+
+  public void tankDriveVolts(double leftVolts, double rightVolts) {
+    m_leftMotor.setVoltage(leftVolts);
+    m_rightMotor.setVoltage(-rightVolts);  // ???make sure right is negative because sides are opposite
+    m_diffDrive.feed();
+  }
+
+  public DifferentialDriveWheelSpeeds getWheelSpeeds () {
+    return new DifferentialDriveWheelSpeeds(m_leftEncoder.getRate(), m_rightEncoder.getRate());
   }
 
   public void resetEncoders() {
@@ -155,6 +167,11 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_odometry.update(Rotation2d.fromDegrees(getGyroAngleZ()), m_leftEncoder.getDistance(), m_rightEncoder.getDistance());
+    m_odometry.update(m_gyro.getRotation2d(), m_leftEncoder.getDistance(), m_rightEncoder.getDistance());
+
+    Pose2d pose = m_odometry.getPoseMeters();
+    SmartDashboard.putNumber("x position", pose.getX());
+    SmartDashboard.putNumber("y position", pose.getY());
+    SmartDashboard.putNumber("heading", pose.getRotation().getDegrees());
   }
 }

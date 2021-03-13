@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.AutoCommandInterface;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -16,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
+  private Command m_prevAutoCommand = null;
   private RobotContainer m_robotContainer;
 
   /**
@@ -50,7 +52,18 @@ public class Robot extends TimedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    // Do not use the member variable m_autonomousCommand. Setting that signals that
+    // the command is running, which it is not, yet.
+    Command autoCmd = m_robotContainer.getAutonomousCommand();
+    if (autoCmd != null && autoCmd != m_prevAutoCommand) {
+      AutoCommandInterface autoCmdInt = (autoCmd instanceof AutoCommandInterface ? (AutoCommandInterface)autoCmd : null);
+      if (autoCmdInt != null) {
+        m_robotContainer.getDriveTrain().setPose(autoCmdInt.getInitialPose());
+      }
+      m_prevAutoCommand = autoCmd;
+    }
+  }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
