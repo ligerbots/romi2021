@@ -28,15 +28,15 @@ public final class Constants {
     // public static final double kaVoltSecondsSquaredPerInch = 0.00473; // kA
     // public static final double kPDriveVel = 0.2;   // kP in tool, I think
 
-    // Team 195 numbers, converted from meters
+    // Team 195 numbers
     public static final double ksVolts = 0.929;   // kS in characterization tool
-    public static final double kvVoltSecondsPerInch = 0.161; // kV
-    public static final double kaVoltSecondsSquaredPerInch = 9.873e-4; // kA
-    public static final double kPDriveVel = 0.125;   // kP in tool, I think
+    public static final double kvVoltSecondsPerMeter = 6.33; // kV
+    public static final double kaVoltSecondsSquaredPerMeter = 0.0389; // kA
+    public static final double kPDriveVel = 0.085;   // kP in tool, I think
 
     // DIFFERENTIAL DRIVE KINEMATICS
-    public static final double kTrackwidth = 5.61; // inches
-    public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidth);
+    public static final double kTrackwidthMeters = 0.142; 
+    public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);
 
     // RAMSETE PARAMETERS
     public static final double kRamseteB = 2; // generic ramsete values

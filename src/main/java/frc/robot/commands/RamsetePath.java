@@ -29,26 +29,25 @@ public class RamsetePath extends SequentialCommandGroup implements AutoCommandIn
         
         // Define these here, but we may override them within the case statement so we can tune each
         // path individually
-        double maxSpeed = 8.0;
-        double maxAccel = 5.0;
+        double maxSpeed = 0.8;
+        double maxAccel = 0.8;
 
         // This will make the robot slow down around turns
         TrajectoryConstraint centripetalAccelerationConstraint = new CentripetalAccelerationConstraint(1.5);
         TrajectoryConstraint autoVoltageConstraint = new DifferentialDriveVoltageConstraint(
-                new SimpleMotorFeedforward(Constants.ksVolts, Constants.kvVoltSecondsPerInch, Constants.kaVoltSecondsSquaredPerInch),
+                new SimpleMotorFeedforward(Constants.ksVolts, Constants.kvVoltSecondsPerMeter, Constants.kaVoltSecondsSquaredPerMeter),
                 Constants.kDriveKinematics,
-                5);
+                10);
 
         TrajectoryConfig configForward = new TrajectoryConfig(maxSpeed, maxAccel)
                 .setKinematics(Constants.kDriveKinematics)
                 .addConstraint(autoVoltageConstraint)
-                .addConstraint(centripetalAccelerationConstraint)
-                .setReversed(false);
+                .addConstraint(centripetalAccelerationConstraint);
 
         Trajectory forwardTrajectory = TrajectoryGenerator.generateTrajectory(
                 initialPose,
                 List.of(), 
-                new Pose2d(24.0, 0.0, Rotation2d.fromDegrees(0.0)), 
+                new Pose2d(0.5, 0.0, Rotation2d.fromDegrees(0.0)), 
                 configForward);
 
         RamseteCommand ramseteForward = new RamseteCommand(
@@ -56,8 +55,8 @@ public class RamsetePath extends SequentialCommandGroup implements AutoCommandIn
             driveTrain::getPose,
             new RamseteController(Constants.kRamseteB, Constants.kRamseteZeta),
             new SimpleMotorFeedforward(Constants.ksVolts,
-                                    Constants.kvVoltSecondsPerInch,
-                                    Constants.kaVoltSecondsSquaredPerInch),
+                                    Constants.kvVoltSecondsPerMeter,
+                                    Constants.kaVoltSecondsSquaredPerMeter),
             Constants.kDriveKinematics,
             driveTrain::getWheelSpeeds,
             new PIDController(Constants.kPDriveVel, 0, 0),
