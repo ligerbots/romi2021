@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -40,6 +41,8 @@ public class Drivetrain extends SubsystemBase {
   // Set up the BuiltInAccelerometer
   private final BuiltInAccelerometer m_accelerometer = new BuiltInAccelerometer();
 
+  private final Field2d m_field2d = new Field2d();
+
   /** Creates a new Drivetrain. */
   public Drivetrain() {
     // Use Meters as unit for encoder distances
@@ -48,6 +51,8 @@ public class Drivetrain extends SubsystemBase {
     resetEncoders();
 
     m_odometry = new DifferentialDriveOdometry(m_gyro.getRotation2d());
+
+    SmartDashboard.putData("field", m_field2d);
   }
 
   public Pose2d getPose() {
@@ -168,7 +173,9 @@ public class Drivetrain extends SubsystemBase {
     // This method will be called once per scheduler run
     m_odometry.update(m_gyro.getRotation2d(), m_leftEncoder.getDistance(), m_rightEncoder.getDistance());
 
-    Pose2d pose = m_odometry.getPoseMeters();
+    // Also update the Field2D object (so that we can visualize this in sim)
+    Pose2d pose = getPose();
+    m_field2d.setRobotPose(pose);
     SmartDashboard.putNumber("x position", pose.getX());
     SmartDashboard.putNumber("y position", pose.getY());
     SmartDashboard.putNumber("heading", pose.getRotation().getDegrees());
