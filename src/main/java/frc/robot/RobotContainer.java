@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 // import edu.wpi.first.wpilibj2.command.button.Button;
 
 import frc.robot.commands.ArcadeDrive;
+import frc.robot.commands.AutoCommandInterface;
 import frc.robot.commands.AutonomousDistance;
 import frc.robot.commands.AutonomousTime;
 import frc.robot.commands.RamsetePath;
@@ -36,7 +37,7 @@ public class RobotContainer {
   private final XboxController m_xbox = new XboxController(0);
 
   // Create SmartDashboard chooser for autonomous routines
-  private final SendableChooser<Command> m_chooser = new SendableChooser<>();
+  private final SendableChooser<AutoCommandInterface> m_chooser = new SendableChooser<>();
 
   // NOTE: The I/O pin functionality of the 5 exposed I/O pins depends on the hardware "overlay"
   // that is specified when launching the wpilib-ws server on the Romi raspberry pi.
@@ -88,7 +89,7 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
+  public AutoCommandInterface getAutonomousCommand() {
     return m_chooser.getSelected();
   }
 

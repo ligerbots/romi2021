@@ -55,13 +55,10 @@ public class Robot extends TimedRobot {
   public void disabledPeriodic() {
     // Do not use the member variable m_autonomousCommand. Setting that signals that
     // the command is running, which it is not, yet.
-    Command autoCmd = m_robotContainer.getAutonomousCommand();
-    if (autoCmd != null && autoCmd != m_prevAutoCommand) {
-      AutoCommandInterface autoCmdInt = (autoCmd instanceof AutoCommandInterface ? (AutoCommandInterface)autoCmd : null);
-      if (autoCmdInt != null) {
-        m_robotContainer.getDriveTrain().setPose(autoCmdInt.getInitialPose());
-      }
-      m_prevAutoCommand = autoCmd;
+    AutoCommandInterface autoCmdInt = m_robotContainer.getAutonomousCommand();
+    if (autoCmdInt != null && autoCmdInt != m_prevAutoCommand) {
+      m_robotContainer.getDriveTrain().setPose(autoCmdInt.getInitialPose());
+      m_prevAutoCommand = autoCmdInt;
     }
   }
 

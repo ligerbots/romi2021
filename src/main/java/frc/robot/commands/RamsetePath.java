@@ -23,7 +23,7 @@ public class RamsetePath extends SequentialCommandGroup implements AutoCommandIn
     // Define the initial pose to be used by this command. This will be used in the initial trajectory
     // and will allow the system to query for it
     // Start at the origin facing the +X direction
-    private Pose2d initialPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0));
+    private final Pose2d m_initialPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0));
 
     public RamsetePath(Drivetrain driveTrain) {
         
@@ -45,7 +45,7 @@ public class RamsetePath extends SequentialCommandGroup implements AutoCommandIn
                 .addConstraint(centripetalAccelerationConstraint);
 
         Trajectory forwardTrajectory = TrajectoryGenerator.generateTrajectory(
-                initialPose,
+                m_initialPose,
                 List.of(), 
                 new Pose2d(0.5, 0.0, Rotation2d.fromDegrees(0.0)), 
                 configForward);
@@ -72,6 +72,6 @@ public class RamsetePath extends SequentialCommandGroup implements AutoCommandIn
 
     // Allows the system to get the initial pose of this command
     public Pose2d getInitialPose() {
-        return initialPose;
+        return m_initialPose;
     }
 }
