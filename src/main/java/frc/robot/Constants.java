@@ -23,19 +23,13 @@ public final class Constants {
 
     // Romi WPILibPi-aeb223bc  March 12, 2021
     // FEEDFORWARD AND FEEDBACK GAINS
-    // public static final double ksVolts = 0.29;   // kS in characterization tool
-    // public static final double kvVoltSecondsPerInch = 0.262; // kV
-    // public static final double kaVoltSecondsSquaredPerInch = 0.00473; // kA
-    // public static final double kPDriveVel = 0.2;   // kP in tool, I think
-
-    // Team 195 numbers
-    public static final double ksVolts = 0.929;   // kS in characterization tool
-    public static final double kvVoltSecondsPerMeter = 6.33; // kV
-    public static final double kaVoltSecondsSquaredPerMeter = 0.0389; // kA
-    public static final double kPDriveVel = 0.085;   // kP in tool, I think
+    public static final double ksVolts = 0.311;   // kS in characterization tool
+    public static final double kvVoltSecondsPerMeter = 10.2; // kV
+    public static final double kaVoltSecondsSquaredPerMeter = 0.234; // kA
+    public static final double kPDriveVel = 0.571;   // kP in tool, I think
+    public static final double kTrackwidthMeters = 0.1435; 
 
     // DIFFERENTIAL DRIVE KINEMATICS
-    public static final double kTrackwidthMeters = 0.142; 
     public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);
 
     // RAMSETE PARAMETERS
