@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
@@ -23,7 +24,7 @@ public class RamsetePath extends SequentialCommandGroup implements AutoCommandIn
     // Define the initial pose to be used by this command. This will be used in the initial trajectory
     // and will allow the system to query for it
     // Start at the origin facing the +X direction
-    private final Pose2d m_initialPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0.0));
+    private final Pose2d m_initialPose = new Pose2d(0.195, 0.57, Rotation2d.fromDegrees(180));
 
     public RamsetePath(Drivetrain driveTrain) {
         
@@ -46,7 +47,11 @@ public class RamsetePath extends SequentialCommandGroup implements AutoCommandIn
 
         Trajectory forwardTrajectory = TrajectoryGenerator.generateTrajectory(
                 m_initialPose,
-                List.of(), 
+                List.of(
+                    new Translation2d(1.01, 0.47) ,
+                    new Translation2d(1.04, 0.27),
+                    new Translation2d(0.85, 0.30)
+                ), 
                 new Pose2d(0.5, 0.0, Rotation2d.fromDegrees(0.0)), 
                 configForward);
 
