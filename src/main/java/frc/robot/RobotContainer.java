@@ -19,6 +19,7 @@ import frc.robot.commands.AutonomousDistance;
 import frc.robot.commands.AutonomousTime;
 import frc.robot.commands.RamsetePath;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Vision;
 // import frc.robot.subsystems.OnBoardIO;
 // import frc.robot.subsystems.OnBoardIO.ChannelMode;
 
@@ -32,6 +33,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Drivetrain m_drivetrain = new Drivetrain();
   // private final OnBoardIO m_onboardIO = new OnBoardIO(ChannelMode.INPUT, ChannelMode.INPUT);
+  private final Vision m_vision = new Vision(m_drivetrain);
 
   // Assumes a game controller plugged into channnel 0
   private final XboxController m_xbox = new XboxController(0);
@@ -78,6 +80,8 @@ public class RobotContainer {
     m_chooser.addOption("Ramsete Test", new RamsetePath(m_drivetrain));
     m_chooser.addOption("Auto Routine Time", new AutonomousTime(m_drivetrain));
     SmartDashboard.putData(m_chooser);
+
+    m_vision.initSmartDashboard();
   }
 
   public Drivetrain getDriveTrain() {
@@ -100,6 +104,6 @@ public class RobotContainer {
    */
   public Command getArcadeDriveCommand() {
     return new ArcadeDrive(
-        m_drivetrain, () -> -m_xbox.getY(Hand.kLeft), () -> m_xbox.getX(Hand.kRight));
+        m_drivetrain, () -> -m_xbox.getY(Hand.kLeft), () -> m_xbox.getX(Hand.kLeft));
   }
 }

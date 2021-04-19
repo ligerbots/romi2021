@@ -8,14 +8,19 @@ import edu.wpi.first.wpilibj.BuiltInAccelerometer;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import edu.wpi.first.wpiutil.math.Matrix;
+import edu.wpi.first.wpiutil.math.numbers.*;
 import frc.robot.sensors.RomiGyro;
+import org.ejml.simple.SimpleMatrix;
 
 public class Drivetrain extends SubsystemBase {
   private static final double kCountsPerRevolution = 1440.0;
@@ -33,7 +38,7 @@ public class Drivetrain extends SubsystemBase {
 
   // Set up the differential drive controller
   private final DifferentialDrive m_diffDrive = new DifferentialDrive(m_leftMotor, m_rightMotor);
-  private DifferentialDriveOdometry m_odometry;
+  private final DifferentialDrivePoseEstimator m_odometry;
 
   // Set up the RomiGyro
   private final RomiGyro m_gyro = new RomiGyro();
@@ -41,7 +46,7 @@ public class Drivetrain extends SubsystemBase {
   // Set up the BuiltInAccelerometer
   private final BuiltInAccelerometer m_accelerometer = new BuiltInAccelerometer();
 
-  private final Field2d m_field2d = new Field2d();
+  final Field2d m_field2d = new Field2d();
 
   /** Creates a new Drivetrain. */
   public Drivetrain() {
@@ -50,13 +55,19 @@ public class Drivetrain extends SubsystemBase {
     m_rightEncoder.setDistancePerPulse((Math.PI * kWheelDiameterMeter) / kCountsPerRevolution);
     resetEncoders();
 
-    m_odometry = new DifferentialDriveOdometry(m_gyro.getRotation2d());
+
+    Matrix<N5,N1> stateStdDevs = new Matrix<N5,N1>(new SimpleMatrix(5,1,true,new double[]{1,1,1,1,1}));
+    Matrix<N3,N1> localMeasurementStdDevs = new Matrix<N3,N1>(new SimpleMatrix(3,1,true,new double[]{1,1,1}));
+    Matrix<N3,N1> visionMeasurementStdDevs = new Matrix<N3,N1>(new SimpleMatrix(3,1,true,new double[]{1,1,1}));
+    m_odometry = new DifferentialDrivePoseEstimator(m_gyro.getRotation2d(),
+            new Pose2d(0,0,new Rotation2d(0)),
+            stateStdDevs, localMeasurementStdDevs, visionMeasurementStdDevs);
 
     SmartDashboard.putData("field", m_field2d);
   }
 
   public Pose2d getPose() {
-    return m_odometry.getPoseMeters();
+    return m_odometry.getEstimatedPosition();
   }
 
   public void setPose(Pose2d pose) {
@@ -67,11 +78,11 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public double getHeading() {
-    return m_odometry.getPoseMeters().getRotation().getDegrees();
+    return m_odometry.getEstimatedPosition().getRotation().getDegrees();
   }
 
   public void arcadeDrive(double xaxisSpeed, double zaxisRotate) {
-    m_diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate);
+    m_diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate, true);
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
@@ -168,10 +179,13 @@ public class Drivetrain extends SubsystemBase {
     m_gyro.reset();
   }
 
+  public void addVisionSample(Pose2d pose, double timestamp){
+    m_odometry.addVisionMeasurement(pose, timestamp);
+  }
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_odometry.update(m_gyro.getRotation2d(), m_leftEncoder.getDistance(), m_rightEncoder.getDistance());
+    m_odometry.update(m_gyro.getRotation2d(),getWheelSpeeds(),  m_leftEncoder.getDistance(), m_rightEncoder.getDistance());
 
     // Also update the Field2D object (so that we can visualize this in sim)
     Pose2d pose = getPose();
