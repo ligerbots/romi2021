@@ -38,7 +38,7 @@ public class Drivetrain extends SubsystemBase {
 
   // Set up the differential drive controller
   private final DifferentialDrive m_diffDrive = new DifferentialDrive(m_leftMotor, m_rightMotor);
-  private final DifferentialDrivePoseEstimator m_odometry;
+  private DifferentialDrivePoseEstimator m_odometry;
 
   // Set up the RomiGyro
   private final RomiGyro m_gyro = new RomiGyro();
@@ -48,6 +48,17 @@ public class Drivetrain extends SubsystemBase {
 
   final Field2d m_field2d = new Field2d();
 
+  static final Matrix<N5,N1> stateStdDevs = new Matrix<N5,N1>(
+          new SimpleMatrix(5,1,true,new double[]{.6,.6,.6,.6,.6})
+  );
+  static final Matrix<N3,N1> localMeasurementStdDevs = new Matrix<N3,N1>(
+          new SimpleMatrix(3,1,true,new double[]{.15,.15,.3})
+  );
+  static final Matrix<N3,N1> visionMeasurementStdDevs = new Matrix<N3,N1>(
+          new SimpleMatrix(3,1,true,new double[]{.1,.1,.05})
+  );
+
+
   /** Creates a new Drivetrain. */
   public Drivetrain() {
     // Use Meters as unit for encoder distances
@@ -56,9 +67,6 @@ public class Drivetrain extends SubsystemBase {
     resetEncoders();
 
 
-    Matrix<N5,N1> stateStdDevs = new Matrix<N5,N1>(new SimpleMatrix(5,1,true,new double[]{1,1,1,1,1}));
-    Matrix<N3,N1> localMeasurementStdDevs = new Matrix<N3,N1>(new SimpleMatrix(3,1,true,new double[]{1,1,1}));
-    Matrix<N3,N1> visionMeasurementStdDevs = new Matrix<N3,N1>(new SimpleMatrix(3,1,true,new double[]{1,1,1}));
     m_odometry = new DifferentialDrivePoseEstimator(m_gyro.getRotation2d(),
             new Pose2d(0,0,new Rotation2d(0)),
             stateStdDevs, localMeasurementStdDevs, visionMeasurementStdDevs);
@@ -82,7 +90,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void arcadeDrive(double xaxisSpeed, double zaxisRotate) {
-    m_diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate, true);
+    m_diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate, false);
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
@@ -179,8 +187,18 @@ public class Drivetrain extends SubsystemBase {
     m_gyro.reset();
   }
 
+  public boolean firstSample = true;
   public void addVisionSample(Pose2d pose, double timestamp){
-    m_odometry.addVisionMeasurement(pose, timestamp);
+    if(firstSample){
+      //setPose(pose);
+      resetEncoders();
+      m_odometry = new DifferentialDrivePoseEstimator(m_gyro.getRotation2d(),
+              pose,
+              stateStdDevs, localMeasurementStdDevs, visionMeasurementStdDevs);
+      firstSample=false;
+    }else {
+      m_odometry.addVisionMeasurement(pose, timestamp);
+    }
   }
   @Override
   public void periodic() {
@@ -189,6 +207,7 @@ public class Drivetrain extends SubsystemBase {
 
     // Also update the Field2D object (so that we can visualize this in sim)
     Pose2d pose = getPose();
+
     m_field2d.setRobotPose(pose);
     SmartDashboard.putNumber("x position", pose.getX());
     SmartDashboard.putNumber("y position", pose.getY());

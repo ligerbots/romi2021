@@ -61,7 +61,8 @@ public class Vision extends SubsystemBase {
             double x = Units.inchesToMeters(sample.pose[0]+offsetX);
             double y = Units.inchesToMeters(sample.pose[2]+offsetY);
             Rotation2d rot = new Rotation2d(Units.degreesToRadians(180-sample.pose[3]));
-            //drivetrain.addVisionSample(new Pose2d(x,y,rot), sample.timestamp);
+            drivetrain.addVisionSample(new Pose2d(x,y,rot), sample.timestamp);
+            //System.out.println(rot.getDegrees()+", "+drivetrain.getPose().getRotation().getDegrees());
             //drivetrain.m_field2d.setRobotPose(new Pose2d(x,y,rot));
         }
     }

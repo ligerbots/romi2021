@@ -58,7 +58,7 @@ public class Robot extends TimedRobot {
     // the command is running, which it is not, yet.
     AutoCommandInterface autoCmdInt = m_robotContainer.getAutonomousCommand();
     if (autoCmdInt != null && autoCmdInt != m_prevAutoCommand) {
-      m_robotContainer.getDriveTrain().setPose(autoCmdInt.getInitialPose());
+      if(autoCmdInt.getInitialPose()!=null)m_robotContainer.getDriveTrain().setPose(autoCmdInt.getInitialPose());
       m_prevAutoCommand = autoCmdInt;
     }
   }
@@ -66,6 +66,7 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    //m_robotContainer.getDriveTrain().firstSample=true;
 
     // Get selected routine from the SmartDashboard
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
@@ -86,6 +87,7 @@ public class Robot extends TimedRobot {
     // use the default command which is ArcadeDrive. If you want the autonomous
     // to continue until interrupted by another command, remove
     // this line or comment it out.
+    m_robotContainer.getDriveTrain().firstSample=true;
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }

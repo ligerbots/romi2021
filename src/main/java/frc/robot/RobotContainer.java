@@ -7,17 +7,17 @@ package frc.robot;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 // import edu.wpi.first.wpilibj2.command.PrintCommand;
 // import edu.wpi.first.wpilibj2.command.button.Button;
 
-import frc.robot.commands.ArcadeDrive;
-import frc.robot.commands.AutoCommandInterface;
-import frc.robot.commands.AutonomousDistance;
-import frc.robot.commands.AutonomousTime;
-import frc.robot.commands.RamsetePath;
+import frc.robot.commands.*;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Vision;
 // import frc.robot.subsystems.OnBoardIO;
@@ -79,6 +79,11 @@ public class RobotContainer {
     m_chooser.setDefaultOption("Auto Routine Distance", new AutonomousDistance(m_drivetrain));
     m_chooser.addOption("Ramsete Test", new RamsetePath(m_drivetrain));
     m_chooser.addOption("Auto Routine Time", new AutonomousTime(m_drivetrain));
+    m_chooser.addOption("Auto Reset", new TargetAuto(m_drivetrain, new Translation2d(Units.inchesToMeters(15./2),Units.inchesToMeters(15+15./2))));
+    m_chooser.addOption("Auto Reset Ramsete", new TargetAutoRamsete(
+            m_drivetrain,
+            new Pose2d(Units.inchesToMeters(15./2),Units.inchesToMeters(15+15./2),new Rotation2d(0))
+    ));
     SmartDashboard.putData(m_chooser);
 
     m_vision.initSmartDashboard();
