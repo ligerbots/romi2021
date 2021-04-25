@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import frc.robot.sensors.RomiGyro;
 import frc.robot.subsystems.Drivetrain;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
@@ -12,6 +13,8 @@ public class DriveTime extends CommandBase {
   private final double m_speed;
   private final Drivetrain m_drive;
   private long m_startTime;
+  private RomiGyro m_gyro = new RomiGyro();
+  private  double m_zaxisRotate;
 
   /**
    * Creates a new DriveTime. This command will drive your robot for a desired speed and time.
@@ -32,12 +35,13 @@ public class DriveTime extends CommandBase {
   public void initialize() {
     m_startTime = System.currentTimeMillis();
     m_drive.arcadeDrive(0, 0);
+    m_zaxisRotate = m_gyro.getAngleZ();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_drive.arcadeDrive(m_speed, 0);
+    m_drive.arcadeDrive(m_speed, -m_zaxisRotate);
   }
 
   // Called once the command ends or is interrupted.
