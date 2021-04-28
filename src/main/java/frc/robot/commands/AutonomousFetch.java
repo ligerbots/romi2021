@@ -15,34 +15,33 @@ public class AutonomousFetch extends SequentialCommandGroup {
   public AutonomousFetch(Drivetrain driveTrain) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-    addCommands( // With Time
-                 new DriveTime(0.6, 1.205, driveTrain),
-                 new TurnTime(-0.6, 0.478, driveTrain),
-                 new DriveTime(0.6, 1.15, driveTrain),// get first ball
-                 new DriveTime(-0.6, 0.88, driveTrain),
-                 new TurnTime(-0.6, 0.187, driveTrain),
-                 new DriveTime(-0.6, 2.256, driveTrain),// bottom
-                 new TurnTime(0.6, 0.355, driveTrain),
-                 new DriveTime(0.6, 0.87, driveTrain),
-                 new TurnTime(-0.6, 0.189, driveTrain),
-                 new DriveTime(0.6, 1.735, driveTrain),// get the second ball
-                 new DriveTime(-0.6, 2.485, driveTrain),// bottom
-                 new TurnTime(0.6, 0.397, driveTrain),
+    addCommands( 
 
-                 new DriveTime(0, 0.5, driveTrain),
+                 new DriveDistance(0.7, 7.5, driveTrain)
+                 
+                 //new TurnTime(-0.7, 0.145, driveTrain),
 
-                 new DriveTime(0.6, 2.06, driveTrain),
-                 new TurnTime(-0.6, 0.456, driveTrain),
-                 new DriveTime(0.6, 2.2, driveTrain), //get the third ball
-                 new DriveTime(-0.6, 1.45, driveTrain),
-                 new TurnTime(0.6, 0.35, driveTrain),
-                 new DriveTime(0.6, 1.37, driveTrain)
+                /* new DriveTime(0.7, 0.92, driveTrain),
+                 new TurnTime(-0.7, 0.31, driveTrain),
+                 new DriveTime(0.7, 0.675, driveTrain),// get first ball
+                 new TurnTime(-0.7, 0.105, driveTrain),
+                 new DriveTime(-0.7, 1.831, driveTrain),//bottom
 
-                 // With Measure
-                 /*
+                 new TurnTime(0.7, 0.23, driveTrain),
+                 new DriveTime(0.7, 0.84, driveTrain),
+                 new TurnTime(-0.7, 0.21798, driveTrain),
+                 new DriveTime(0.7, 1.294, driveTrain), // get the second ball
+                 new DriveTime(-0.7, 1.786, driveTrain), //bottom
+                 new TurnTime(0.7, 0.28, driveTrain),
 
-                 new DriveDistance()
-                 */
+                 new DriveTime(0.7, 1.644, driveTrain),
+                 new TurnTime(-0.7, 0.3428, driveTrain),
+                 new DriveTime(0.7, 1.62, driveTrain), // get the third ball
+
+                 new DriveTime(-0.7, 0.8, driveTrain),
+                 new TurnTime(0.7, 0.3, driveTrain),
+                 new DriveTime(0.7, 0.812, driveTrain)*/
+
                  );
   }
 }
