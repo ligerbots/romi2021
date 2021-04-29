@@ -54,6 +54,18 @@ public class DriveTime extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
+    if(Math.abs(System.currentTimeMillis() - m_startTime) >= m_duration){
+      return (System.currentTimeMillis() - m_startTime) >= m_duration;
+    }
+  while (m_drive.getLeftEncoderCount() >= m_drive.getRightEncoderCount()) {
+    if (m_drive.getLeftEncoderCount() > m_drive.getRightEncoderCount()) {
+      if (m_speed > 0) {
+        m_drive.arcadeDrive(m_speed, -0.25);
+      } else {
+        m_drive.arcadeDrive(m_speed, 0.25);
+      }
+    }
+  }
     return (System.currentTimeMillis() - m_startTime) >= m_duration;
   }
 }
