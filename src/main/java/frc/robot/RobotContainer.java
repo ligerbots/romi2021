@@ -81,7 +81,9 @@ public class RobotContainer {
     //     .whenInactive(new PrintCommand("Button A Released"));
 
     // Setup SmartDashboard options
-    m_chooser.setDefaultOption("FranticFetch", new MoveList(
+    m_chooser.setDefaultOption("Encoder characterization", new EncoderChars(m_drivetrain));
+
+    m_chooser.addOption("FranticFetch", new MoveList(
             List.of(
                     FranticFetch.grid(1,3),
                     FranticFetch.grid(3,3),
@@ -105,7 +107,8 @@ public class RobotContainer {
             new Translation2d(
                     Units.inchesToMeters(15./2),
                     Units.inchesToMeters(15+15./2)
-            )
+            ),
+            false
     ));
     m_chooser.addOption("Turn Move test", new TurnMove(
             m_drivetrain,

@@ -31,7 +31,7 @@ public class TurnDegFast {
     static TurnCalib calib = new TurnCalib(10.931134884174053, -0.47194243211010295, -11.031038084763747, 4.403532609205993);
     static TurnTicks getTurnCommand(Rotation2d angle, Drivetrain driveTrain){
         int signedTicks = calib.getTicksForAngle(angle);
-        System.out.println(angle+" -> "+signedTicks);
+        //System.out.println(angle+" -> "+signedTicks);
         if(signedTicks>=0) return(new TurnTicks(signedTicks,1,driveTrain));
         else return(new TurnTicks(-signedTicks,-1,driveTrain));
     }

@@ -11,31 +11,28 @@ import frc.robot.Constants;
 import frc.robot.commands.AutoCommandInterface;
 import frc.robot.subsystems.Drivetrain;
 
-public class TurnMoveSeq extends CommandBase implements AutoCommandInterface {
+public class TurnMoveSeq extends SequentialCommandGroup implements AutoCommandInterface {
     Drivetrain driveTrain;
     Translation2d target;
 
-    static final double meterPerRad = Constants.kTrackwidthMeters / 2;
-
     double acceptableAngleError=.1;
     double acceptableDistanceError=.03;
-    boolean done = false;
-    public TurnMoveSeq(Drivetrain driveTrain, Translation2d target) {
+
+    public TurnMoveSeq(Drivetrain driveTrain, Translation2d target, boolean doMove) {
         this.driveTrain=driveTrain;
         this.target=target;
 
+        addCommands(
+                new InstantSuppliedCommand(()->{
+                    double angleError = angleError();
+                    return(TurnDegFast.getTurnCommand(new Rotation2d(-angleError), driveTrain));
+                }, driveTrain),
+                new TurnChar.DelaySeconds(.3),
+                new FineTurn()
+        );
+        if(doMove)addCommands(new Move());
+    }
 
-    }
-    @Override
-    public void initialize() {
-        double angleError = angleError();
-        done=false;
-        TurnDegFast.getTurnCommand(new Rotation2d(-angleError), driveTrain)
-                .andThen(new TurnChar.DelaySeconds(.3))
-                .andThen(new FineTurn())
-                .andThen(new Move())
-                .andThen(()-> done=true).schedule();
-    }
 
     public static double clamp(double val, double max) {
         return Math.max(-max, Math.min(max, val));
@@ -64,9 +61,9 @@ public class TurnMoveSeq extends CommandBase implements AutoCommandInterface {
 
 
     class FineTurn extends CommandBase {
-        boolean done;
+        int doneticks = 0;
         FineTurn(){
-
+            addRequirements(driveTrain);
         }
 
         @Override
@@ -77,12 +74,13 @@ public class TurnMoveSeq extends CommandBase implements AutoCommandInterface {
         public void execute(){
             double angle = angleError();
             if(Math.abs(angle)<acceptableAngleError){
-                done=true;
-            }else if(angle>0){
-                driveTrain.arcadeDrive(0, -.1);
+                doneticks++;
             }else{
-                driveTrain.arcadeDrive(0, .1);
+                doneticks=0;
             }
+            driveTrain.arcadeDrive(0, clamp(-angle,.1));
+
+
         }
         @Override
         public void end(boolean interrupted) {
@@ -90,17 +88,19 @@ public class TurnMoveSeq extends CommandBase implements AutoCommandInterface {
         }
         @Override
         public boolean isFinished() {
-            return done;
+            return doneticks>10;
         }
     }
     class Move extends CommandBase {
         boolean done;
         Move(){
+            addRequirements(driveTrain);
 
         }
 
         @Override
         public void initialize() {
+            System.out.println("MOVE START");
 
         }
         @Override
@@ -118,13 +118,15 @@ public class TurnMoveSeq extends CommandBase implements AutoCommandInterface {
                     speed=distance+.2;
                 }
 
-                driveTrain.arcadeDrive(speed, -clamp(angle/3,.5));
+                driveTrain.arcadeDrive(speed, 0);
 
             }
         }
         @Override
         public void end(boolean interrupted) {
             driveTrain.arcadeDrive(0, 0);
+            System.out.println("MOVE END");
+
         }
         @Override
         public boolean isFinished() {
@@ -132,10 +134,6 @@ public class TurnMoveSeq extends CommandBase implements AutoCommandInterface {
         }
     }
 
-    @Override
-    public boolean isFinished() {
-        return done;
-    }
     @Override
     public Pose2d getInitialPose() {
         return null;

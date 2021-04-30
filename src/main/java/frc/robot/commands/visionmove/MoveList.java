@@ -16,7 +16,9 @@ import java.util.List;
 public class MoveList extends SequentialCommandGroup implements AutoCommandInterface {
     public MoveList(List<Translation2d> points, Drivetrain drivetrain){
         for(Translation2d point: points){
-            addCommands(new TurnMoveSeq(drivetrain,point), new InstantCommand(()->{drivetrain.firstSample=true;}));
+            addCommands(new TurnMoveSeq(drivetrain,point,true),
+                        new InstantCommand(()->{drivetrain.firstSample=true;}),
+                        drivetrain.new WaitForVision((Pose2d res)->{}));
         }
 
     }

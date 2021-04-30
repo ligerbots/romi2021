@@ -101,12 +101,18 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void arcadeDrive(double xaxisSpeed, double zaxisRotate) {
-    m_diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate+ xaxisSpeed* Constants.turncomp, false);
+    m_diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate, false);
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
     m_leftMotor.setVoltage(leftVolts);
     m_rightMotor.setVoltage(-rightVolts);  // ???make sure right is negative because sides are opposite
+    m_diffDrive.feed();
+  }
+
+  public void tankDrive(double left, double right) {
+    m_leftMotor.set(left);
+    m_rightMotor.set(-right);  // ???make sure right is negative because sides are opposite
     m_diffDrive.feed();
   }
 

@@ -22,7 +22,6 @@ public final class Constants {
     // These numbers are supposed to be in inches (not meters like the big robot)
 
     // The romi larry has
-    public static final double turncomp = -.25; //compensate for unequal motors
 
     // FEEDFORWARD AND FEEDBACK GAINS
     public static final double ksVolts = 1.32;   // kS in characterization tool
