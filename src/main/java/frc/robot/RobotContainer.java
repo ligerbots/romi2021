@@ -18,8 +18,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 // import edu.wpi.first.wpilibj2.command.button.Button;
 
 import frc.robot.commands.*;
+import frc.robot.commands.visionmove.*;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Vision;
+
+import java.util.List;
 // import frc.robot.subsystems.OnBoardIO;
 // import frc.robot.subsystems.OnBoardIO.ChannelMode;
 
@@ -40,6 +43,8 @@ public class RobotContainer {
 
   // Create SmartDashboard chooser for autonomous routines
   private final SendableChooser<AutoCommandInterface> m_chooser = new SendableChooser<>();
+  TrajectoryPlotter m_plotter = new TrajectoryPlotter(m_drivetrain.getField2d());
+
 
   // NOTE: The I/O pin functionality of the 5 exposed I/O pins depends on the hardware "overlay"
   // that is specified when launching the wpilib-ws server on the Romi raspberry pi.
@@ -76,7 +81,43 @@ public class RobotContainer {
     //     .whenInactive(new PrintCommand("Button A Released"));
 
     // Setup SmartDashboard options
-    m_chooser.setDefaultOption("Auto Routine Distance", new AutonomousDistance(m_drivetrain));
+    m_chooser.setDefaultOption("FranticFetch", new MoveList(
+            List.of(
+                    FranticFetch.grid(1,3),
+                    FranticFetch.grid(3,3),
+                    FranticFetch.grid(3,5),
+                    FranticFetch.grid(3.5,3),
+                    FranticFetch.grid(4.5,1),
+                    FranticFetch.grid(5.5,1),
+                    FranticFetch.grid(6,1),
+                    FranticFetch.grid(6,5),
+                    FranticFetch.grid(6,1),
+                    FranticFetch.grid(9,1),
+                    FranticFetch.grid(9,5),
+                    FranticFetch.grid(9,3),
+                    FranticFetch.grid(9,3),
+                    FranticFetch.grid(11,3)
+            ),
+            m_drivetrain
+    ));
+    m_chooser.addOption("Turn Move Seq", new TurnMoveSeq(
+            m_drivetrain,
+            new Translation2d(
+                    Units.inchesToMeters(15./2),
+                    Units.inchesToMeters(15+15./2)
+            )
+    ));
+    m_chooser.addOption("Turn Move test", new TurnMove(
+            m_drivetrain,
+            new Translation2d(
+                    Units.inchesToMeters(15./2),
+                    Units.inchesToMeters(15+15./2)
+            )
+    ));
+    m_chooser.addOption("Test Turn Deg Fast", new TestTurnDegFast(m_drivetrain));
+
+    m_chooser.addOption("Auto Routine Distance", new AutonomousDistance(m_drivetrain));
+    m_chooser.addOption("Turn characterization", new TurnChars(m_drivetrain));
     m_chooser.addOption("Ramsete Test", new RamsetePath(m_drivetrain));
     m_chooser.addOption("Auto Routine Time", new AutonomousTime(m_drivetrain));
     m_chooser.addOption("Auto Reset", new TargetAuto(m_drivetrain, new Translation2d(Units.inchesToMeters(15./2),Units.inchesToMeters(15+15./2))));
@@ -84,6 +125,7 @@ public class RobotContainer {
             m_drivetrain,
             new Pose2d(Units.inchesToMeters(15./2),Units.inchesToMeters(15+15./2),new Rotation2d(0))
     ));
+    m_chooser.addOption("FranticFetchRamsete",new FranticFetch(m_drivetrain));
     SmartDashboard.putData(m_chooser);
 
     m_vision.initSmartDashboard();

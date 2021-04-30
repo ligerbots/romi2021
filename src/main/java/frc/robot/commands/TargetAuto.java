@@ -51,7 +51,7 @@ public class TargetAuto extends CommandBase implements AutoCommandInterface {
             lastReset = System.currentTimeMillis();
             driveTrain.firstSample=true;
         }
-        System.out.println("angleerror: "+ angleerror+ " targetdistance: "+targetdistance);
+        //System.out.println("angleerror: "+ angleerror+ " targetdistance: "+targetdistance);
     }
 
     @Override

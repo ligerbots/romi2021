@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.AutoCommandInterface;
+import frc.robot.commands.Plottable;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -60,6 +61,11 @@ public class Robot extends TimedRobot {
     if (autoCmdInt != null && autoCmdInt != m_prevAutoCommand) {
       if(autoCmdInt.getInitialPose()!=null)m_robotContainer.getDriveTrain().setPose(autoCmdInt.getInitialPose());
       m_prevAutoCommand = autoCmdInt;
+      if (Robot.isSimulation()) {
+
+        m_robotContainer.m_plotter.clear();
+        if(autoCmdInt instanceof Plottable) ((Plottable) autoCmdInt).plotTrajectory(m_robotContainer.m_plotter);
+      }
     }
   }
 

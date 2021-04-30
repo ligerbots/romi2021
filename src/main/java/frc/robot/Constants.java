@@ -21,13 +21,15 @@ public final class Constants {
     // Drivetrain constants for run Ramsete commands
     // These numbers are supposed to be in inches (not meters like the big robot)
 
-    // Romi WPILibPi-aeb223bc  March 12, 2021
+    // The romi larry has
+    public static final double turncomp = -.25; //compensate for unequal motors
+
     // FEEDFORWARD AND FEEDBACK GAINS
-    public static final double ksVolts = 1.17;   // kS in characterization tool
-    public static final double kvVoltSecondsPerMeter = (6.3+6.61)/2; // kV
-    public static final double kaVoltSecondsSquaredPerMeter = (0.0156+0.0209)/2; // kA
-    public static final double kPDriveVel = (0.00393+0.000693)/2;   // kP in tool, I think
-    public static final double kTrackwidthMeters = (0.14274348662230546+0.14289960027241586)/2;
+    public static final double ksVolts = 1.32;   // kS in characterization tool
+    public static final double kvVoltSecondsPerMeter = 6.13; // kV
+    public static final double kaVoltSecondsSquaredPerMeter = 0.0189; // kA
+    public static final double kPDriveVel = 0.00343;   // kP in tool, I think
+    public static final double kTrackwidthMeters = 0.14284467176823962;
 
     // DIFFERENTIAL DRIVE KINEMATICS
     public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);

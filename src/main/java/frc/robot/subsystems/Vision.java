@@ -62,6 +62,7 @@ public class Vision extends SubsystemBase {
             double y = Units.inchesToMeters(sample.pose[2]+offsetY);
             Rotation2d rot = new Rotation2d(Units.degreesToRadians(180-sample.pose[3]));
             drivetrain.addVisionSample(new Pose2d(x,y,rot), sample.timestamp);
+            //System.out.println(RobotController.getFPGATime()/1000-sample.timestamp);
             //System.out.println(rot.getDegrees()+", "+drivetrain.getPose().getRotation().getDegrees());
             //drivetrain.m_field2d.setRobotPose(new Pose2d(x,y,rot));
         }
@@ -116,7 +117,6 @@ public class Vision extends SubsystemBase {
             PrintWriter out = null;
             Scanner in = null;
             try {
-
                 out = new PrintWriter(clientSocket.getOutputStream());
 
                 in = new Scanner(clientSocket.getInputStream());

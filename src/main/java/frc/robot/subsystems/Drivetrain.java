@@ -15,12 +15,17 @@ import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import edu.wpi.first.wpiutil.math.Matrix;
 import edu.wpi.first.wpiutil.math.numbers.*;
+import frc.robot.Constants;
 import frc.robot.sensors.RomiGyro;
 import org.ejml.simple.SimpleMatrix;
+
+import java.util.ArrayList;
+import java.util.function.Consumer;
 
 public class Drivetrain extends SubsystemBase {
   private static final double kCountsPerRevolution = 1440.0;
@@ -39,6 +44,7 @@ public class Drivetrain extends SubsystemBase {
   // Set up the differential drive controller
   private final DifferentialDrive m_diffDrive = new DifferentialDrive(m_leftMotor, m_rightMotor);
   private DifferentialDrivePoseEstimator m_odometry;
+  //private DifferentialDriveOdometry m_odometry;
 
   // Set up the RomiGyro
   private final RomiGyro m_gyro = new RomiGyro();
@@ -48,14 +54,15 @@ public class Drivetrain extends SubsystemBase {
 
   final Field2d m_field2d = new Field2d();
 
+
   static final Matrix<N5,N1> stateStdDevs = new Matrix<N5,N1>(
-          new SimpleMatrix(5,1,true,new double[]{.6,.6,.6,.6,.6})
+          new SimpleMatrix(5,1,true,new double[]{1.5,1.5,1.5,1.5,1.5})
   );
   static final Matrix<N3,N1> localMeasurementStdDevs = new Matrix<N3,N1>(
-          new SimpleMatrix(3,1,true,new double[]{.15,.15,.3})
+          new SimpleMatrix(3,1,true,new double[]{.05,.05,.3})
   );
   static final Matrix<N3,N1> visionMeasurementStdDevs = new Matrix<N3,N1>(
-          new SimpleMatrix(3,1,true,new double[]{.1,.1,.05})
+          new SimpleMatrix(3,1,true,new double[]{.05,.05,.01})
   );
 
 
@@ -71,11 +78,14 @@ public class Drivetrain extends SubsystemBase {
             new Pose2d(0,0,new Rotation2d(0)),
             stateStdDevs, localMeasurementStdDevs, visionMeasurementStdDevs);
 
+    //m_odometry = new DifferentialDriveOdometry(m_gyro.getRotation2d());
+
     SmartDashboard.putData("field", m_field2d);
   }
 
   public Pose2d getPose() {
     return m_odometry.getEstimatedPosition();
+    //return m_odometry.getPoseMeters();
   }
 
   public void setPose(Pose2d pose) {
@@ -87,10 +97,11 @@ public class Drivetrain extends SubsystemBase {
 
   public double getHeading() {
     return m_odometry.getEstimatedPosition().getRotation().getDegrees();
+    //return m_odometry.getPoseMeters().getRotation().getDegrees();
   }
 
   public void arcadeDrive(double xaxisSpeed, double zaxisRotate) {
-    m_diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate, false);
+    m_diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate+ xaxisSpeed* Constants.turncomp, false);
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
@@ -128,6 +139,9 @@ public class Drivetrain extends SubsystemBase {
     return (getLeftDistanceMeter() + getRightDistanceMeter()) / 2.0;
   }
 
+  public Field2d getField2d(){
+    return m_field2d;
+  }
   /**
    * The acceleration in the X-axis.
    *
@@ -188,22 +202,50 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public boolean firstSample = true;
+  ArrayList<Consumer<Pose2d>> visionListeners = new ArrayList<>();
   public void addVisionSample(Pose2d pose, double timestamp){
+    for(Consumer<Pose2d> visionListener:visionListeners){
+      visionListener.accept(pose);
+    }
+    visionListeners.clear();
+
     if(firstSample){
-      //setPose(pose);
+
       resetEncoders();
       m_odometry = new DifferentialDrivePoseEstimator(m_gyro.getRotation2d(),
               pose,
               stateStdDevs, localMeasurementStdDevs, visionMeasurementStdDevs);
       firstSample=false;
     }else {
-      m_odometry.addVisionMeasurement(pose, timestamp);
+      m_odometry.addVisionMeasurement(pose, timestamp/1000.);
+    }
+  }
+  public class WaitForVision extends CommandBase {
+    Pose2d result;
+    Consumer<Pose2d> doWithResult;
+    public WaitForVision(Consumer<Pose2d> doWithResult) {
+      this.doWithResult=doWithResult;
+    }
+
+    @Override
+    public void initialize() {
+      result=null;
+      visionListeners.add((Pose2d visionMeasurement)->{
+        doWithResult.accept(visionMeasurement);
+        result = visionMeasurement;
+      });
+    }
+
+    @Override
+    public boolean isFinished() {
+      return result!=null;
     }
   }
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
     m_odometry.update(m_gyro.getRotation2d(),getWheelSpeeds(),  m_leftEncoder.getDistance(), m_rightEncoder.getDistance());
+    //m_odometry.update(m_gyro.getRotation2d(), m_leftEncoder.getDistance(), m_rightEncoder.getDistance());
 
     // Also update the Field2D object (so that we can visualize this in sim)
     Pose2d pose = getPose();
@@ -213,4 +255,6 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putNumber("y position", pose.getY());
     SmartDashboard.putNumber("heading", pose.getRotation().getDegrees());
   }
+
+
 }
