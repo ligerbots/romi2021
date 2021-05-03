@@ -11,6 +11,10 @@ public class TurnDegrees extends CommandBase {
   private final Drivetrain m_drive;
   private final double m_degrees;
   private final double m_speed;
+
+  int total = 0;
+  int calL = 0;
+  int calR = 0;
   /**
    * Creates a new TurnDegrees. This command will turn your robot for a desired rotation (in
    * degrees) and rotational speed.
@@ -38,12 +42,14 @@ public class TurnDegrees extends CommandBase {
   @Override
   public void execute() {
     m_drive.arcadeDrive(0, m_speed);
+    total++;
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     m_drive.arcadeDrive(0, 0);
+    //System.out.println("Done");
   }
 
   // Returns true when the command should end.
@@ -56,12 +62,41 @@ public class TurnDegrees extends CommandBase {
     */
     double inchPerDegree = Math.PI * 5.551 / 360;
     // Compare distance travelled from start to distance based on degree turn
-    return getAverageTurningDistance() >= (inchPerDegree * m_degrees);
+    //System.out.println("Left: " + m_drive.getLeftDistanceInch());
+    //System.out.println("Right: " + m_drive.getRightDistanceInch());
+    double error = 0; 
+    for(int i = 0; i < 5; i++){
+      error += Math.abs(m_drive.getLeftEncoderCount()) - Math.abs(m_drive.getRightEncoderCount());
+    }
+
+    while (error <= 0) {
+      if(getAverageTurningDistance() >= (inchPerDegree * m_degrees)) return getAverageTurningDistance() >= (inchPerDegree * m_degrees);
+      //error = 0;
+      if(m_speed < 0){
+        m_drive.arcadeDrive(0, -0.4);
+        calR++;
+      } else{
+        m_drive.arcadeDrive(0, 0.4);
+        calL++;
+      }
+      System.out.println("L: " + calL + " R: " + calR + " out of " + total);
+    for(int i = 0; i < 5; i++){
+      error += Math.abs(m_drive.getLeftEncoderCount()) - Math.abs(m_drive.getRightEncoderCount());
+    }
   }
+    return getAverageTurningDistance() >= (inchPerDegree * m_degrees);
+}
 
   private double getAverageTurningDistance() {
     double leftDistance = Math.abs(m_drive.getLeftDistanceInch());
     double rightDistance = Math.abs(m_drive.getRightDistanceInch());
-    return (leftDistance + rightDistance) / 2.0;
+    double i = 0;
+
+    for(; i < 10; i++){
+       leftDistance += Math.abs(m_drive.getLeftDistanceInch());
+       rightDistance += Math.abs(m_drive.getRightDistanceInch());
+    }
+    //return (leftDistance + rightDistance) / 2.0;
+    return (leftDistance + rightDistance) / i;
   }
 }

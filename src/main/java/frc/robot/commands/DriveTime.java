@@ -39,9 +39,9 @@ public class DriveTime extends CommandBase {
   @Override
   public void execute() {
     if(m_speed > 0){
-        m_drive.arcadeDrive(m_speed, -0.15);
+        m_drive.arcadeDrive(m_speed, -0.23);
     } else{
-        m_drive.arcadeDrive(m_speed, 0.15);
+        m_drive.arcadeDrive(m_speed, 0.23);
     }
   }
 
@@ -54,18 +54,29 @@ public class DriveTime extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if(Math.abs(System.currentTimeMillis() - m_startTime) >= m_duration){
-      return (System.currentTimeMillis() - m_startTime) >= m_duration;
+    /*int error = 0; 
+    for(int i = 0; i < 5; i++){
+      error += m_drive.getLeftEncoderCount() - m_drive.getRightEncoderCount();
     }
-  while (m_drive.getLeftEncoderCount() >= m_drive.getRightEncoderCount()) {
-    if (m_drive.getLeftEncoderCount() > m_drive.getRightEncoderCount()) {
-      if (m_speed > 0) {
-        m_drive.arcadeDrive(m_speed, -0.25);
-      } else {
-        m_drive.arcadeDrive(m_speed, 0.25);
+    //while (m_drive.getLeftEncoderCount() >= m_drive.getRightEncoderCount()) {
+    while (error >= 0) {
+      if((System.currentTimeMillis() - m_startTime) >= m_duration){
+        return (System.currentTimeMillis() - m_startTime) >= m_duration;
       }
-    }
-  }
+      if (m_drive.getLeftEncoderCount() > m_drive.getRightEncoderCount()) {
+        if (m_speed > 0) {
+          m_drive.arcadeDrive(m_speed, -0.38);
+        } else {
+          m_drive.arcadeDrive(m_speed, 0.38);
+        }
+      } else {
+        if (m_speed > 0) {
+          m_drive.arcadeDrive(m_speed, 0.1);
+        } else {
+          m_drive.arcadeDrive(m_speed, -0.1);
+        }
+      }
+    }*/
     return (System.currentTimeMillis() - m_startTime) >= m_duration;
   }
 }

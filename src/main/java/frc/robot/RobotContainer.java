@@ -97,4 +97,8 @@ public class RobotContainer {
     return new ArcadeDrive(
         m_drivetrain, () -> -m_xbox.getY(Hand.kLeft), () -> m_xbox.getX(Hand.kRight));
   }
+
+  public Drivetrain getDrivetrain(){
+    return m_drivetrain;
+  }
 }

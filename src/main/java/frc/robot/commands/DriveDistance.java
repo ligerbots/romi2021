@@ -4,14 +4,21 @@
 
 package frc.robot.commands;
 
+import frc.robot.sensors.RomiGyro;
 import frc.robot.subsystems.Drivetrain;
+
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class DriveDistance extends CommandBase {
   private final Drivetrain m_drive;
   private final double m_distance;
   private final double m_speed;
-
+  private double m_zaxis;
+  private RomiGyro m_romiGyro = new RomiGyro();
+  int total = 0;
+  int calibrationL = 0;
+  int calibrationR = 0;
   /**
    * Creates a new DriveDistance. This command will drive your your robot for a desired distance at
    * a desired speed.
@@ -32,16 +39,18 @@ public class DriveDistance extends CommandBase {
   public void initialize() {
     m_drive.arcadeDrive(0, 0);
     m_drive.resetEncoders();
+
+    m_zaxis = m_romiGyro.getAngleZ();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     if(m_speed > 0){
-      m_drive.arcadeDrive(m_speed, -0.15);
-  } else{
-      m_drive.arcadeDrive(m_speed, 0.15);
-  }
+      m_drive.arcadeDrive(m_speed, -0.2);
+    } else{
+      m_drive.arcadeDrive(m_speed, 0.2);
+    }
   }
 
   // Called once the command ends or is interrupted.
@@ -54,18 +63,45 @@ public class DriveDistance extends CommandBase {
   @Override
   public boolean isFinished() {
     // Compare distance travelled from start to desired distance
-    if(Math.abs(m_drive.getAverageDistanceInch()) >= m_distance){
-        return Math.abs(m_drive.getAverageDistanceInch()) >= m_distance;
+    int error = 0; 
+    for(int i = 0; i < 5; i++){
+      error += m_drive.getLeftEncoderCount() - m_drive.getRightEncoderCount();
     }
-    while (m_drive.getLeftEncoderCount() >= m_drive.getRightEncoderCount()) {
+    //while (m_drive.getLeftEncoderCount() >= m_drive.getRightEncoderCount()) {
+    while (error >= 0) {
+      //error = 0;
+      if(Math.abs(m_drive.getAverageDistanceInch()) >= m_distance){
+        return Math.abs(m_drive.getAverageDistanceInch()) >= m_distance;
+      }
       if (m_drive.getLeftEncoderCount() > m_drive.getRightEncoderCount()) {
         if (m_speed > 0) {
-          m_drive.arcadeDrive(m_speed, -0.25);
+          m_drive.arcadeDrive(m_speed, -0.38);
         } else {
-          m_drive.arcadeDrive(m_speed, 0.25);
+          m_drive.arcadeDrive(m_speed, 0.38);
+        }
+      } else {
+        if (m_speed > 0) {
+          m_drive.arcadeDrive(m_speed, 0.1);
+        } else {
+          m_drive.arcadeDrive(m_speed, -0.1);
         }
       }
+      /*for(int i = 0; i < 5; i++){
+        error += m_drive.getLeftEncoderCount() - m_drive.getRightEncoderCount();
+      }*/
     }
+
+    /*while(m_romiGyro.getAngleZ() != m_zaxis){
+      if(Math.abs(m_drive.getAverageDistanceInch()) >= m_distance){
+        return Math.abs(m_drive.getAverageDistanceInch()) >= m_distance;
+      }
+      if(m_romiGyro.getAngleZ() > m_zaxis){
+        m_drive.arcadeDrive(m_speed, -0.5);
+      } else{
+        m_drive.arcadeDrive(m_speed, 0.5);
+      }
+    }*/
+
     return Math.abs(m_drive.getAverageDistanceInch()) >= m_distance;
   }
 }

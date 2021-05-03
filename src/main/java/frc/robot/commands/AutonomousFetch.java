@@ -17,15 +17,13 @@ public class AutonomousFetch extends SequentialCommandGroup {
     // addCommands(new FooCommand(), new BarCommand());
     addCommands( 
 
-                 //new DriveDistance(0.7, 15, driveTrain)
-                 new TurnDegrees(-0.7, 90, driveTrain)
                  //new TurnTime(-0.7, 0.145, driveTrain),
 
-                /* new DriveTime(0.7, 0.92, driveTrain),
-                 new TurnTime(-0.7, 0.31, driveTrain),
+                 /*new DriveTime(0.7, 0.91, driveTrain),
+                 new TurnTime(-0.7, 0.295, driveTrain),
                  new DriveTime(0.7, 0.675, driveTrain),// get first ball
                  new TurnTime(-0.7, 0.105, driveTrain),
-                 new DriveTime(-0.7, 1.831, driveTrain),//bottom
+                 new DriveTime(-0.7, 1.831, driveTrain)//bottom
 
                  new TurnTime(0.7, 0.23, driveTrain),
                  new DriveTime(0.7, 0.84, driveTrain),
