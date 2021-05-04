@@ -1,13 +1,12 @@
 package frc.robot.commands.visionmove;
 
+import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.Constants;
 import frc.robot.commands.AutoCommandInterface;
 import frc.robot.subsystems.Drivetrain;
 
@@ -18,18 +17,21 @@ public class TurnMoveSeq extends SequentialCommandGroup implements AutoCommandIn
     double acceptableAngleError=.1;
     double acceptableDistanceError=.03;
 
+    double expectedRotRad;
+
     public TurnMoveSeq(Drivetrain driveTrain, Translation2d target, boolean doMove) {
         this.driveTrain=driveTrain;
         this.target=target;
 
         addCommands(
-                new InstantSuppliedCommand(()->{
+                /*new InstantSuppliedCommand(()->{
+                    expectedRotRad= calcExpectedRotRad();
                     double angleError = angleError();
                     return(TurnDegFast.getTurnCommand(new Rotation2d(-angleError), driveTrain));
-                }, driveTrain),
-                new TurnChar.DelaySeconds(.3),
+                }, driveTrain),*/
                 new FineTurn()
         );
+
         if(doMove)addCommands(new Move());
     }
 
@@ -38,9 +40,15 @@ public class TurnMoveSeq extends SequentialCommandGroup implements AutoCommandIn
         return Math.max(-max, Math.min(max, val));
     }
 
+    double calcExpectedRotRad(){
+        Pose2d currentPose = driveTrain.getPose();
+        Translation2d delta = target.minus(currentPose.getTranslation());
+
+        double targetangle = Math.atan2(delta.getY(),delta.getX());
+        return(targetangle);
+    }
     double angleError(){
         Pose2d currentPose = driveTrain.getPose();
-
         Translation2d delta = target.minus(currentPose.getTranslation());
 
         double targetangle = Math.atan2(delta.getY(),delta.getX());
@@ -59,16 +67,61 @@ public class TurnMoveSeq extends SequentialCommandGroup implements AutoCommandIn
         return(Math.hypot(delta.getX(),delta.getY()));
     }
 
+    /*
+    class FineTurn extends CommandBase {
+        PIDController pid;
+        int cnt;
+        FineTurn(){
+            addRequirements(driveTrain);
+            pid = new PIDController(.2,.1,.5, 0.020);
+            pid.setTolerance(.1,.07);
+            pid.enableContinuousInput(-Math.PI, Math.PI);
 
+        }
+
+        @Override
+        public void initialize() {
+            cnt=0;
+        }
+        @Override
+        public void execute(){
+            Pose2d currentPose = driveTrain.getPose();
+            Translation2d delta = target.minus(currentPose.getTranslation());
+
+            double targetangle = Math.atan2(delta.getY(),delta.getX());
+
+            double currentAngle =  currentPose.getRotation().getRadians();
+
+            double out = pid.calculate(currentAngle, targetangle);
+            out+=.03*Math.signum(out);
+            System.out.println("ANGLE ERROR "+pid.getPositionError()+" VEL ERROR "+ pid.getVelocityError()+ " currentangle "+currentAngle );
+            driveTrain.tankDrive(-out,out);
+            cnt++;
+        }
+        @Override
+        public void end(boolean interrupted) {
+            System.out.println("FINETURN " + interrupted);
+            driveTrain.arcadeDrive(0, 0);
+        }
+        @Override
+        public boolean isFinished() {
+
+            DifferentialDriveWheelSpeeds wheelSpeeds = driveTrain.getWheelSpeeds();
+            double avgWheelSpeeds = (Math.abs(wheelSpeeds.leftMetersPerSecond)+Math.abs(wheelSpeeds.rightMetersPerSecond))/2;
+            return ((pid.atSetpoint()&&avgWheelSpeeds<.02)||cnt>45);
+        }
+    }*/
     class FineTurn extends CommandBase {
         int doneticks = 0;
+        double maxSpeed;
+
         FineTurn(){
             addRequirements(driveTrain);
         }
 
         @Override
         public void initialize() {
-
+            maxSpeed=.35;
         }
         @Override
         public void execute(){
@@ -78,7 +131,17 @@ public class TurnMoveSeq extends SequentialCommandGroup implements AutoCommandIn
             }else{
                 doneticks=0;
             }
-            driveTrain.arcadeDrive(0, clamp(-angle,.1));
+            if(Math.abs(angle)<1) {
+                maxSpeed=Math.min(maxSpeed,.25);
+
+            }
+            if(Math.abs(angle)<.5){
+                maxSpeed=Math.min(maxSpeed,.2);
+            }
+            if(Math.abs(angle)<.3){
+                maxSpeed=Math.min(maxSpeed,.1);
+            }
+            driveTrain.arcadeDrive(0, -maxSpeed*Math.signum(angle));
 
 
         }
@@ -100,8 +163,7 @@ public class TurnMoveSeq extends SequentialCommandGroup implements AutoCommandIn
 
         @Override
         public void initialize() {
-            System.out.println("MOVE START");
-
+            done=false;
         }
         @Override
         public void execute(){
@@ -111,22 +173,23 @@ public class TurnMoveSeq extends SequentialCommandGroup implements AutoCommandIn
                 driveTrain.arcadeDrive(0, 0);
                 done=true;
             }else{
-                double speed;
-                if(distance>.5){
-                    speed=1;
-                }else{
-                    speed=distance+.2;
-                }
+                double currentangle = driveTrain.getPose().getRotation().getRadians();
 
-                driveTrain.arcadeDrive(speed, 0);
+                double error = currentangle - expectedRotRad;
+                if(error>Math.PI) error-=2*Math.PI;
+                if(error<-Math.PI) error+=2*Math.PI;
+
+                double speed;
+
+                //System.out.println(currentangle+" "+expectedRotRad+" "+error);
+
+                driveTrain.arcadeDrive(clamp(distance+.2,.9), 0/*clamp(error,.3)*/);
 
             }
         }
         @Override
         public void end(boolean interrupted) {
             driveTrain.arcadeDrive(0, 0);
-            System.out.println("MOVE END");
-
         }
         @Override
         public boolean isFinished() {

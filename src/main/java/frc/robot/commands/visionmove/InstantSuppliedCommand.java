@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 public class InstantSuppliedCommand extends CommandBase {
     Command command;
     Supplier<Command> supplier;
-    InstantSuppliedCommand(Supplier<Command> supplier, Subsystem... requirements){
+    public InstantSuppliedCommand(Supplier<Command> supplier, Subsystem... requirements){
         this.supplier = supplier;
         for(Subsystem requirement:requirements)
             addRequirements(requirement);

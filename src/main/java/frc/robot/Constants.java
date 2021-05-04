@@ -24,11 +24,11 @@ public final class Constants {
     // The romi larry has
 
     // FEEDFORWARD AND FEEDBACK GAINS
-    public static final double ksVolts = 1.32;   // kS in characterization tool
-    public static final double kvVoltSecondsPerMeter = 6.13; // kV
-    public static final double kaVoltSecondsSquaredPerMeter = 0.0189; // kA
-    public static final double kPDriveVel = 0.00343;   // kP in tool, I think
-    public static final double kTrackwidthMeters = 0.14284467176823962;
+    public static final double ksVolts = 1.28;   // kS in characterization tool
+    public static final double kvVoltSecondsPerMeter = 6.96; // kV
+    public static final double kaVoltSecondsSquaredPerMeter = 0.0159; // kA
+    public static final double kPDriveVel = 0.00034;   // kP in tool, I think
+    public static final double kTrackwidthMeters = 0.14214288276311557;
 
     // DIFFERENTIAL DRIVE KINEMATICS
     public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);

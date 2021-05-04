@@ -81,8 +81,9 @@ public class RobotContainer {
     //     .whenInactive(new PrintCommand("Button A Released"));
 
     // Setup SmartDashboard options
-    m_chooser.setDefaultOption("Encoder characterization", new EncoderChars(m_drivetrain));
-
+    m_chooser.addOption("Encoder characterization", new EncoderChars(m_drivetrain));
+    m_chooser.addOption("Move characterization", new MoveChars(m_drivetrain));
+    m_chooser.addOption("TestTurnMoveFast",new TestTurnMoveFast(m_drivetrain));
     m_chooser.addOption("FranticFetch", new MoveList(
             List.of(
                     FranticFetch.grid(1,3),
@@ -90,13 +91,12 @@ public class RobotContainer {
                     FranticFetch.grid(3,5),
                     FranticFetch.grid(3.5,3),
                     FranticFetch.grid(4.5,1),
-                    FranticFetch.grid(5.5,1),
+                    FranticFetch.grid(6,1),
                     FranticFetch.grid(6,1),
                     FranticFetch.grid(6,5),
                     FranticFetch.grid(6,1),
                     FranticFetch.grid(9,1),
                     FranticFetch.grid(9,5),
-                    FranticFetch.grid(9,3),
                     FranticFetch.grid(9,3),
                     FranticFetch.grid(11,3)
             ),
@@ -128,7 +128,7 @@ public class RobotContainer {
             m_drivetrain,
             new Pose2d(Units.inchesToMeters(15./2),Units.inchesToMeters(15+15./2),new Rotation2d(0))
     ));
-    m_chooser.addOption("FranticFetchRamsete",new FranticFetch(m_drivetrain));
+    m_chooser.setDefaultOption("FranticFetchRamsete",new FranticFetch(m_drivetrain));
     SmartDashboard.putData(m_chooser);
 
     m_vision.initSmartDashboard();

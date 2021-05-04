@@ -1,7 +1,6 @@
 package frc.robot.commands.visionmove;
 
 import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -13,22 +12,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class EncoderChars extends SequentialCommandGroup implements AutoCommandInterface {
-    public EncoderChars(Drivetrain drivetrain){
+public class MoveChars extends SequentialCommandGroup implements AutoCommandInterface {
+    public MoveChars(Drivetrain drivetrain){
 
         ArrayList<List<Command>> commands = new ArrayList<>();
-        for(double s =0;s<=1;s+=.03){
+        for(int ticks =0;ticks<100;ticks+=2){
             commands.add(List.of(
-                    new InstantCommand(()->{drivetrain.firstSample=true;}),
-                    drivetrain.new WaitForVision((Pose2d res)->{}),
-                    new TurnMoveSeq(drivetrain,FranticFetch.grid(1,3),true),
-                    new TurnChar.DelaySeconds(1),
+                    drivetrain.getVisionResetCommand(),
+                    new TurnChar.DelaySeconds(.5),
+
+                    new TurnMoveSeq(drivetrain,FranticFetch.grid(1,1),true),
+                    new TurnChar.DelaySeconds(.5),
 
 
-                    new TurnMoveSeq(drivetrain,FranticFetch.grid(12,3),false),
-                    new TurnChar.DelaySeconds(1),
+                    new TurnMoveSeq(drivetrain,FranticFetch.grid(5,6),false),
+                    new TurnChar.DelaySeconds(.5),
 
-                    new EncoderChar(drivetrain, s, s)
+                    new MoveChar(drivetrain,ticks,.8)
             ));
         }
         Collections.shuffle(commands);
@@ -38,7 +38,7 @@ public class EncoderChars extends SequentialCommandGroup implements AutoCommandI
             }
         }
         addCommands(new InstantCommand(() -> {
-            System.out.println(EncoderChar.samples);
+            System.out.println(MoveChar.samples);
         }));
     }
 

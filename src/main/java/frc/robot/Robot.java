@@ -51,7 +51,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    m_robotContainer.getDriveTrain().getVisionResetCommand().schedule();
+  }
 
   @Override
   public void disabledPeriodic() {
@@ -93,7 +95,7 @@ public class Robot extends TimedRobot {
     // use the default command which is ArcadeDrive. If you want the autonomous
     // to continue until interrupted by another command, remove
     // this line or comment it out.
-    m_robotContainer.getDriveTrain().firstSample=true;
+    m_robotContainer.getDriveTrain().getVisionResetCommand().schedule();
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
