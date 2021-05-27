@@ -19,16 +19,15 @@ import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 public final class Constants {
 
     // Drivetrain constants for run Ramsete commands
-    // These numbers are supposed to be in inches (not meters like the big robot)
 
     // The romi larry has
 
     // FEEDFORWARD AND FEEDBACK GAINS
-    public static final double ksVolts = 1.28;   // kS in characterization tool
-    public static final double kvVoltSecondsPerMeter = 6.96; // kV
-    public static final double kaVoltSecondsSquaredPerMeter = 0.0159; // kA
-    public static final double kPDriveVel = 0.00034;   // kP in tool, I think
-    public static final double kTrackwidthMeters = 0.14214288276311557;
+    public static final double ksVolts = 1.55;   // kS in characterization tool
+    public static final double kvVoltSecondsPerMeter = 6.06; // kV
+    public static final double kaVoltSecondsSquaredPerMeter = 0.0153; // kA
+    public static final double kPDriveVel = 0.000818;   // kP in tool, I think
+    public static final double kTrackwidthMeters = 0.1434413491329822;
 
     // DIFFERENTIAL DRIVE KINEMATICS
     public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);

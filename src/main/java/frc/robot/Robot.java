@@ -5,10 +5,12 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.AutoCommandInterface;
 import frc.robot.commands.Plottable;
+import frc.robot.subsystems.OnBoardIO;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -53,10 +55,14 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     m_robotContainer.getDriveTrain().getVisionResetCommand().schedule();
+    m_robotContainer.getOnBoardIO().setIntakeServo(false);
+    m_robotContainer.getOnBoardIO().setKickerServo(false);
+    m_robotContainer.getOnBoardIO().setIntakeBattery(false);
   }
 
   @Override
   public void disabledPeriodic() {
+
     // Do not use the member variable m_autonomousCommand. Setting that signals that
     // the command is running, which it is not, yet.
     AutoCommandInterface autoCmdInt = m_robotContainer.getAutonomousCommand();
@@ -103,7 +109,14 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    OnBoardIO io = m_robotContainer.getOnBoardIO();
+    XboxController xbox = m_robotContainer.getXbox();
+    io.setKickerServo(xbox.getAButton());
+    io.setIntakeServo(xbox.getBButton());
+    io.setIntakeBattery(xbox.getXButton());
+
+  }
 
   @Override
   public void testInit() {

@@ -4,10 +4,7 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DigitalOutput;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /**
@@ -28,6 +25,12 @@ public class OnBoardIO extends SubsystemBase {
   // DIO 2
   private DigitalInput m_buttonC;
   private DigitalOutput m_redLed;
+
+  //private PWM kicker = new PWM(3);
+  //private PWM intake = new PWM(2);
+  private DigitalOutput intakepin = new DigitalOutput(12);
+  private DigitalOutput kickerpin = new DigitalOutput(11);;
+  private DigitalOutput intakebatterypin = new DigitalOutput(10);;
 
   private static final double MESSAGE_INTERVAL = 1.0;
   private double m_nextMessageTime;
@@ -55,6 +58,15 @@ public class OnBoardIO extends SubsystemBase {
     } else {
       m_redLed = new DigitalOutput(2);
     }
+    /*
+    kicker.setBounds(1.0,1.0,1.5,2.0,2.0);
+    intake.setBounds(1.0,1.0,1.5,2.0,2.0);
+    System.out.println(kicker.getRawBounds().min+", "+
+                       kicker.getRawBounds().deadbandMin+", "+
+                       kicker.getRawBounds().center+", "+
+                       kicker.getRawBounds().deadbandMax+", "+
+                       kicker.getRawBounds().max);
+     */
   }
 
   /** Gets if the A button is pressed. */
@@ -119,6 +131,17 @@ public class OnBoardIO extends SubsystemBase {
   /** Sets the yellow LED. */
   public void setYellowLed(boolean value) {
     m_yellowLed.set(value);
+  }
+
+  public void setIntakeServo(boolean mode) {
+    intakepin.set(mode);
+  }
+  public void setKickerServo(boolean mode) {
+    kickerpin.set(mode);
+  }
+
+  public void setIntakeBattery(boolean mode){
+    intakebatterypin.set(mode);
   }
 
   @Override

@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.Constants;
 import frc.robot.subsystems.Drivetrain;
 
-public class FranticFetch extends SequentialCommandGroup implements AutoCommandInterface {
+public class AlliananceAnticsAuto extends SequentialCommandGroup implements AutoCommandInterface {
     // Define the initial pose to be used by this command. This will be used in the initial trajectory
     // and will allow the system to query for it
     // Start at the origin facing the +X direction
@@ -28,15 +28,14 @@ public class FranticFetch extends SequentialCommandGroup implements AutoCommandI
     public static Translation2d grid(double x, double y){
         return(new Translation2d(Units.inchesToMeters(x*15/2),Units.inchesToMeters(y*15/2)));
     }
-    private final Pose2d m_initialPose = new Pose2d(grid(1,3),new Rotation2d(0));
-    Trajectory forwardTrajectory;
+    private final Pose2d m_initialPose = null;
     Drivetrain driveTrain;
-    public FranticFetch(Drivetrain driveTrain) {
+    public AlliananceAnticsAuto(Drivetrain driveTrain) {
 
         this.driveTrain=driveTrain;
 
-        double maxSpeed = 0.5;
-        double maxAccel = 0.5;
+        double maxSpeed = 0.3;
+        double maxAccel = 0.3;
 
         // This will make the robot slow down around turns
         TrajectoryConstraint centripetalAccelerationConstraint = new CentripetalAccelerationConstraint(1.5);
@@ -50,64 +49,45 @@ public class FranticFetch extends SequentialCommandGroup implements AutoCommandI
                 .addConstraint(autoVoltageConstraint)
                 .addConstraint(centripetalAccelerationConstraint);
 
-        TrajectoryConfig backForward = new TrajectoryConfig(maxSpeed, maxAccel)
+        TrajectoryConfig configBackwards = new TrajectoryConfig(maxSpeed, maxAccel)
                 .setKinematics(Constants.kDriveKinematics)
                 .addConstraint(autoVoltageConstraint)
                 .addConstraint(centripetalAccelerationConstraint).setReversed(true);
 
 
 
+
         this.addRequirements(driveTrain);
         addCommands(
-                new WaitCommand(2),
                 driveTrain.new WaitForVision(driveTrain::setPose),
-                new SelectCommand(()->{
+
+                new InstantSuppliedCommand(()->{
                     Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
                             driveTrain.getPose(),
                             List.of(
-                                    grid(2.5,3.5)
+                                    grid(9, 5),
+                                    grid(6, 5),
+                                    grid(3, 5)
                             ),
-                            new Pose2d(grid(2.8,5), Rotation2d.fromDegrees(90)),
+                            new Pose2d(grid(1, 5.5), Rotation2d.fromDegrees(180)),
                             configForward);
                     return(generateRamseteCommand(trajectory));
                 }),
                 driveTrain.new WaitForVision(driveTrain::setPose),
-                new SelectCommand(()->{
-                    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                            driveTrain.getPose(),
+
+                new InstantSuppliedCommand(()-> {
+                    Trajectory trajectory2 = TrajectoryGenerator.generateTrajectory(
+                            new Pose2d(grid(1, 5.5), Rotation2d.fromDegrees(180)),
                             List.of(
-                                    grid(3.9,3),
-                                    grid(4.3,1.6),
-                                    grid(6,1.6)
+                                    grid(2, 5.2),
+                                    grid(3, 4.5),
+                                    grid(2.8, 3.6),
+                                    grid( 2, 3)
+
                             ),
-                            new Pose2d(grid(6.5,5), Rotation2d.fromDegrees(270)),
-                            backForward);
-                    return(generateRamseteCommand(trajectory));
-                }),
-                driveTrain.new WaitForVision((Pose2d result)->{driveTrain.setPose(result);}),
-                new SelectCommand(()->{
-                    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                            driveTrain.getPose(),
-                            List.of(
-                                    grid(6.3,2),
-                                    grid(7.1,1),
-                                    grid(8.5,1),
-                                    grid(8.6,2)
-                            ),
-                            new Pose2d(grid(8.9,4.7), Rotation2d.fromDegrees(90)),
-                            configForward);
-                    return(generateRamseteCommand(trajectory));
-                }),
-                driveTrain.new WaitForVision((Pose2d result)->{driveTrain.setPose(result);}),
-                new SelectCommand(()->{
-                    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                            driveTrain.getPose(),
-                            List.of(
-                                    grid(9.3,3.7)
-                            ),
-                            new Pose2d(grid(11,3.2), Rotation2d.fromDegrees(180)),
-                            backForward);
-                    return(generateRamseteCommand(trajectory));
+                            new Pose2d(grid(1, 2.9), Rotation2d.fromDegrees(0)),
+                            configBackwards);
+                    return(generateRamseteCommand(trajectory2));
                 }),
                 new InstantCommand(() -> driveTrain.tankDriveVolts(0, 0) )
         );
@@ -135,6 +115,6 @@ public class FranticFetch extends SequentialCommandGroup implements AutoCommandI
     }*/
     // Allows the system to get the initial pose of this command
     public Pose2d getInitialPose() {
-        return null;
+        return m_initialPose;
     }
 }
