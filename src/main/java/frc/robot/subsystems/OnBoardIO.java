@@ -30,7 +30,7 @@ public class OnBoardIO extends SubsystemBase {
   //private PWM intake = new PWM(2);
   private DigitalOutput intakepin = new DigitalOutput(12);
   private DigitalOutput kickerpin = new DigitalOutput(11);;
-  private DigitalOutput intakebatterypin = new DigitalOutput(10);;
+  private DigitalOutput batterypin = new DigitalOutput(10);;
 
   private static final double MESSAGE_INTERVAL = 1.0;
   private double m_nextMessageTime;
@@ -140,8 +140,8 @@ public class OnBoardIO extends SubsystemBase {
     kickerpin.set(mode);
   }
 
-  public void setIntakeBattery(boolean mode){
-    intakebatterypin.set(mode);
+  public void setBattery(boolean mode){
+    batterypin.set(mode);
   }
 
   @Override

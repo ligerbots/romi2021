@@ -85,13 +85,14 @@ public class RobotContainer {
 
     // Setup SmartDashboard options
 
-    m_chooser.setDefaultOption("Alliance Antics Auto", new AlliananceAnticsAuto(m_drivetrain));
+    m_chooser.setDefaultOption("Alliance Antics Auto", new AlliananceAnticsAuto(m_drivetrain, m_onboardIO));
     m_chooser.addOption("Auto Reset Ramsete", new TargetAutoRamsete(
             m_drivetrain,
             new Pose2d(Units.inchesToMeters(15./2),Units.inchesToMeters(15+15./2),new Rotation2d(0))
     ));
 
     SmartDashboard.putData(m_chooser);
+
 
     m_vision.initSmartDashboard();
   }

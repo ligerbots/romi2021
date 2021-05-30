@@ -57,7 +57,7 @@ public class Robot extends TimedRobot {
     m_robotContainer.getDriveTrain().getVisionResetCommand().schedule();
     m_robotContainer.getOnBoardIO().setIntakeServo(false);
     m_robotContainer.getOnBoardIO().setKickerServo(false);
-    m_robotContainer.getOnBoardIO().setIntakeBattery(false);
+    m_robotContainer.getOnBoardIO().setIntakeServo(false);
   }
 
   @Override
@@ -114,7 +114,7 @@ public class Robot extends TimedRobot {
     XboxController xbox = m_robotContainer.getXbox();
     io.setKickerServo(xbox.getAButton());
     io.setIntakeServo(xbox.getBButton());
-    io.setIntakeBattery(xbox.getXButton());
+    io.setBattery(xbox.getXButton());
 
   }
 

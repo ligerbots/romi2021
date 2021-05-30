@@ -70,7 +70,7 @@ public class Drivetrain extends SubsystemBase {
   );
 
   Pose2d resetNextTick= null;
-
+  public Pose2d lastVisionPosition = null;
   /** Creates a new Drivetrain. */
   public Drivetrain() {
     // Use Meters as unit for encoder distances
@@ -224,6 +224,7 @@ public class Drivetrain extends SubsystemBase {
         //System.out.println("Vision measurement too old need:"+listenerEntry.getSecond()+" it " +timestamp);
       }
     }
+    lastVisionPosition=pose;
     /*
     if(firstSample){
 
