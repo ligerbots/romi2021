@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.AutoCommandInterface;
 import frc.robot.commands.Plottable;
+import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.OnBoardIO;
 
 /**
@@ -115,7 +116,8 @@ public class Robot extends TimedRobot {
     io.setKickerServo(xbox.getAButton());
     io.setIntakeServo(xbox.getBButton());
     io.setBattery(xbox.getXButton());
-
+    Drivetrain drivetrain = m_robotContainer.getDriveTrain();
+    if(drivetrain.lastVisionPosition!=null)drivetrain.setPose(drivetrain.lastVisionPosition);
   }
 
   @Override

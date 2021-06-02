@@ -284,6 +284,8 @@ public class Drivetrain extends SubsystemBase {
     SmartDashboard.putNumber("y position", pose.getY());
     SmartDashboard.putNumber("heading", pose.getRotation().getDegrees());
 
+    m_field2d.getObject("line").setPose(pose);
+
     if(resetNextTick != null){
       /*
       resetEncoders();

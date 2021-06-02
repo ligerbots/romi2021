@@ -21,7 +21,7 @@ import frc.robot.Constants;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.OnBoardIO;
 
-public class AlliananceAnticsAuto extends SequentialCommandGroup implements AutoCommandInterface {
+public class AllianceAnticsAuto extends SequentialCommandGroup implements AutoCommandInterface {
     // Define the initial pose to be used by this command. This will be used in the initial trajectory
     // and will allow the system to query for it
     // Start at the origin facing the +X direction
@@ -32,12 +32,12 @@ public class AlliananceAnticsAuto extends SequentialCommandGroup implements Auto
     private final Pose2d m_initialPose = null;
     Drivetrain driveTrain;
     OnBoardIO onBoardIO;
-    public AlliananceAnticsAuto(Drivetrain driveTrain, OnBoardIO onBoardIO) {
+    public AllianceAnticsAuto(Drivetrain driveTrain, OnBoardIO onBoardIO) {
 
         this.driveTrain=driveTrain;
         this.onBoardIO=onBoardIO;
-        double maxSpeed = 0.3;
-        double maxAccel = 0.3;
+        double maxSpeed = 0.5;
+        double maxAccel = 0.5;
 
         // This will make the robot slow down around turns
         TrajectoryConstraint centripetalAccelerationConstraint = new CentripetalAccelerationConstraint(1.5);
@@ -57,47 +57,42 @@ public class AlliananceAnticsAuto extends SequentialCommandGroup implements Auto
                 .addConstraint(centripetalAccelerationConstraint).setReversed(true);
 
 
-
-
+        double correctDrift = -0.5;
         this.addRequirements(driveTrain);
         addCommands(
-                driveTrain.new WaitForVision(this::offsetVisionPose),
-                addIntakeCommands(
-                        new InstantSuppliedCommand(()->{
-                            Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                    driveTrain.getPose(),
-                                    List.of(),
-                                    new Pose2d(grid(9, 5), Rotation2d.fromDegrees(180)),
-                                    configForward);
-                            return(generateRamseteCommand(trajectory));
-                        }),
-                        0.5
-                ),
-                driveTrain.new WaitForVision(this::offsetVisionPose),
-                addIntakeCommands(
-                        new InstantSuppliedCommand(()->{
-                            Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                    driveTrain.getPose(),
-                                    List.of(),
-                                    new Pose2d(grid(6, 5), Rotation2d.fromDegrees(180)),
-                                    configForward);
-                            return(generateRamseteCommand(trajectory));
-                        }),
-                        1
-                ),
-                driveTrain.new WaitForVision(this::offsetVisionPose),
-                addIntakeCommands(
-                        new InstantSuppliedCommand(()->{
-                            Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                    driveTrain.getPose(),
-                                    List.of(),
-                                    new Pose2d(grid(3, 5), Rotation2d.fromDegrees(180)),
-                                    configForward);
-                            return(generateRamseteCommand(trajectory));
-                        }),
-                        1
-                ),
-                driveTrain.new WaitForVision(this::offsetVisionPose),
+                driveTrain.new WaitForVision(driveTrain::setPose),
+
+                new InstantSuppliedCommand(()->{
+                    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                            driveTrain.getPose(),
+                            List.of(),
+                            new Pose2d(grid(9, 5+correctDrift), Rotation2d.fromDegrees(180)),
+                            configForward);
+                    return(addIntakeCommands(generateRamseteCommand(trajectory),0.5, trajectory.getTotalTimeSeconds()));
+                }),
+
+                driveTrain.new WaitForVision(driveTrain::setPose),
+
+                new InstantSuppliedCommand(()->{
+                    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                            driveTrain.getPose(),
+                            List.of(),
+                            new Pose2d(grid(6, 5+correctDrift), Rotation2d.fromDegrees(180)),
+                            configForward);
+                    return(addIntakeCommands(generateRamseteCommand(trajectory),1, trajectory.getTotalTimeSeconds()));
+                }),
+
+                driveTrain.new WaitForVision(driveTrain::setPose),
+                new InstantSuppliedCommand(()->{
+                    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                            driveTrain.getPose(),
+                            List.of(),
+                            new Pose2d(grid(3, 5+correctDrift), Rotation2d.fromDegrees(180)),
+                            configForward);
+                    return(addIntakeCommands(generateRamseteCommand(trajectory),1, trajectory.getTotalTimeSeconds()));
+                }),
+
+                driveTrain.new WaitForVision(driveTrain::setPose),
 
                 new InstantSuppliedCommand(()->{
                     Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
@@ -108,18 +103,18 @@ public class AlliananceAnticsAuto extends SequentialCommandGroup implements Auto
                     return(generateRamseteCommand(trajectory));
                 }),
 
-                driveTrain.new WaitForVision(this::offsetVisionPose),
+                driveTrain.new WaitForVision(driveTrain::setPose),
 
                 new InstantSuppliedCommand(()->{
                     Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
                             driveTrain.getPose(),
                             List.of(),
-                            new Pose2d(grid(1.2, 5.5), Rotation2d.fromDegrees(180)),
+                            new Pose2d(grid(1.5, 5.5), Rotation2d.fromDegrees(180)),
                             configForward);
                     return(generateRamseteCommand(trajectory));
                 }),
                 getKickCommand(),
-                driveTrain.new WaitForVision(this::offsetVisionPose),
+                driveTrain.new WaitForVision(driveTrain::setPose),
 
                 new InstantSuppliedCommand(()-> {
                     Trajectory trajectory2 = TrajectoryGenerator.generateTrajectory(
@@ -127,7 +122,7 @@ public class AlliananceAnticsAuto extends SequentialCommandGroup implements Auto
                             List.of(
                                     grid(2, 5.2),
                                     grid(3, 4.5),
-                                    grid(2.8, 3.6),
+                                    grid(2.8, 3.3),
                                     grid( 2, 3)
 
                             ),
@@ -138,9 +133,7 @@ public class AlliananceAnticsAuto extends SequentialCommandGroup implements Auto
                 new InstantCommand(() -> driveTrain.tankDriveVolts(0, 0) )
         );
     }
-    void offsetVisionPose(Pose2d original){
-        driveTrain.setPose(new Pose2d(original.getX(),original.getY()-.05,original.getRotation()));
-    }
+
     RamseteCommand generateRamseteCommand(Trajectory trajectory){
         return(new RamseteCommand(
                 trajectory,
@@ -158,11 +151,14 @@ public class AlliananceAnticsAuto extends SequentialCommandGroup implements Auto
         ));
 
     }
-    Command addIntakeCommands(Command command, double delayIntake){
-        return(new ParallelDeadlineGroup(
+    Command addIntakeCommands(Command command, double delayIntake, double ramseteLength){
+        return(new ParallelCommandGroup(
                 command,
-                new WaitCommand(delayIntake).andThen(()->onBoardIO.setIntakeServo(true))
-        ).andThen(()->onBoardIO.setIntakeServo(false)));
+                new WaitCommand(delayIntake)
+                        .andThen(()->onBoardIO.setIntakeServo(true))
+                        .andThen(new WaitCommand(ramseteLength-delayIntake-0.5))
+                        .andThen(()->onBoardIO.setIntakeServo(false)))
+        );
     }
     Command getKickCommand(){
         return(new SequentialCommandGroup(

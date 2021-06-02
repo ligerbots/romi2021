@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.commands.VisionCorrection;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -35,21 +36,14 @@ public class Vision extends SubsystemBase {
                     '}';
         }
     }
-    float offsetX=0;
-    float offsetY=0;
-    public void initSmartDashboard() {
-        SmartDashboard.getEntry("offsetX").addListener((EntryNotification e) -> offsetX = (float) e.value.getDouble(), EntryListenerFlags.kUpdate | EntryListenerFlags.kNew);
-        SmartDashboard.putNumber("offsetX", offsetX);
-        SmartDashboard.getEntry("offsetY").addListener((EntryNotification e) -> offsetY = (float) e.value.getDouble(), EntryListenerFlags.kUpdate | EntryListenerFlags.kNew);
-        SmartDashboard.putNumber("offsetY", offsetY);
-    }
 
     Queue<Sample> samples = new ConcurrentLinkedQueue<Sample>();
 
     Drivetrain drivetrain;
-
+    VisionCorrection visionCorrection;
     public Vision(Drivetrain drivetrain){
         this.drivetrain=drivetrain;
+        visionCorrection = new VisionCorrection("visioncalib.txt");
         new Thread(new Server(samples)).start();
     }
 
@@ -58,10 +52,10 @@ public class Vision extends SubsystemBase {
         while(true){
             Sample sample = samples.poll();
             if(sample == null)break;
-            double x = Units.inchesToMeters(sample.pose[0]+offsetX);
-            double y = Units.inchesToMeters(sample.pose[2]+offsetY);
+            double x = Units.inchesToMeters(sample.pose[0]);
+            double y = Units.inchesToMeters(sample.pose[2]);
             Rotation2d rot = new Rotation2d(Units.degreesToRadians(180-sample.pose[3]));
-            drivetrain.addVisionSample(new Pose2d(x,y,rot), sample.timestamp);
+            drivetrain.addVisionSample(visionCorrection.correct(new Pose2d(x,y,rot)), sample.timestamp);
             //System.out.println(RobotController.getFPGATime()/1000-sample.timestamp);
             //System.out.println(rot.getDegrees()+", "+drivetrain.getPose().getRotation().getDegrees());
             //drivetrain.m_field2d.setRobotPose(new Pose2d(x,y,rot));

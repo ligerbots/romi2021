@@ -7,11 +7,12 @@ import frc.robot.subsystems.Drivetrain;
 
 public class VisionTest extends CommandBase implements AutoCommandInterface {
     Drivetrain drivetrain;
-    VisionTest(Drivetrain drivetrain){
+    public VisionTest(Drivetrain drivetrain){
         this.drivetrain=drivetrain;
     }
     @Override
     public void execute(){
+        drivetrain.setPose(drivetrain.lastVisionPosition);
     }
     @Override
     public Pose2d getInitialPose() {

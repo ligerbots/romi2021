@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
@@ -19,13 +18,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 // import edu.wpi.first.wpilibj2.command.button.Button;
 
 
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.*;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Vision;
 
-import java.util.List;
 import frc.robot.subsystems.OnBoardIO;
+
+import static frc.robot.commands.AllianceAnticsAuto.grid;
 // import frc.robot.subsystems.OnBoardIO.ChannelMode;
 
 /**
@@ -84,17 +83,15 @@ public class RobotContainer {
 
 
     // Setup SmartDashboard options
-
-    m_chooser.setDefaultOption("Alliance Antics Auto", new AlliananceAnticsAuto(m_drivetrain, m_onboardIO));
+    m_chooser.setDefaultOption("Kick", new Kick(m_drivetrain, grid(9,5), grid(1,5.5)));
+    m_chooser.addOption("Alliance Antics Auto", new AllianceAnticsAuto(m_drivetrain, m_onboardIO));
     m_chooser.addOption("Auto Reset Ramsete", new TargetAutoRamsete(
             m_drivetrain,
             new Pose2d(Units.inchesToMeters(15./2),Units.inchesToMeters(15+15./2),new Rotation2d(0))
     ));
-
+    m_chooser.addOption("Vision test", new VisionTest(m_drivetrain));
+    m_chooser.addOption("Vision Calib", new VisionCalib(m_drivetrain));
     SmartDashboard.putData(m_chooser);
-
-
-    m_vision.initSmartDashboard();
   }
   public XboxController getXbox(){
     return m_xbox;
