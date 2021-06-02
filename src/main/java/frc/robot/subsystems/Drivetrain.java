@@ -58,17 +58,6 @@ public class Drivetrain extends SubsystemBase {
 
   final Field2d m_field2d = new Field2d();
 
-
-  static final Matrix<N5,N1> stateStdDevs = new Matrix<N5,N1>(
-          new SimpleMatrix(5,1,true,new double[]{.5,.5,1.5,.5,.5})
-  );
-  static final Matrix<N3,N1> localMeasurementStdDevs = new Matrix<N3,N1>(
-          new SimpleMatrix(3,1,true,new double[]{.3,.3,.3})
-  );
-  static final Matrix<N3,N1> visionMeasurementStdDevs = new Matrix<N3,N1>(
-          new SimpleMatrix(3,1,true,new double[]{.1,.1,.05})
-  );
-
   Pose2d resetNextTick= null;
   public Pose2d lastVisionPosition = null;
   /** Creates a new Drivetrain. */
@@ -78,17 +67,12 @@ public class Drivetrain extends SubsystemBase {
     m_rightEncoder.setDistancePerPulse((Math.PI * kWheelDiameterMeter) / kCountsPerRevolution);
     resetEncoders();
 
-    /*m_odometry = new DifferentialDrivePoseEstimator(m_gyro.getRotation2d(),
-            new Pose2d(0,0,new Rotation2d(0)),
-            stateStdDevs, localMeasurementStdDevs, visionMeasurementStdDevs);
-    */
     m_odometry = new DifferentialDriveOdometry(m_gyro.getRotation2d());
 
     SmartDashboard.putData("field", m_field2d);
   }
 
   public Pose2d getPose() {
-    //return m_odometry.getEstimatedPosition();
     return m_odometry.getPoseMeters();
   }
 
@@ -100,7 +84,6 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public double getHeading() {
-    //return m_odometry.getEstimatedPosition().getRotation().getDegrees();
     return m_odometry.getPoseMeters().getRotation().getDegrees();
   }
 
@@ -211,7 +194,6 @@ public class Drivetrain extends SubsystemBase {
     m_gyro.reset();
   }
 
-  public boolean firstSample = true;
   ArrayList<Pair<Consumer<Pose2d>,Double>> visionListeners = new ArrayList<>();
   public void addVisionSample(Pose2d pose, double timestamp){
     ListIterator<Pair<Consumer<Pose2d>,Double>> iter = visionListeners.listIterator();
@@ -225,17 +207,6 @@ public class Drivetrain extends SubsystemBase {
       }
     }
     lastVisionPosition=pose;
-    /*
-    if(firstSample){
-
-      resetEncoders();
-      m_odometry = new DifferentialDrivePoseEstimator(m_gyro.getRotation2d(),
-              pose,
-              stateStdDevs, localMeasurementStdDevs, visionMeasurementStdDevs);
-      firstSample=false;
-    }else {
-      m_odometry.addVisionMeasurement(pose, timestamp/1000.);
-    }*/
   }
   public class WaitForVision extends CommandBase {
     Pose2d result;
@@ -248,10 +219,10 @@ public class Drivetrain extends SubsystemBase {
     @Override
     public void initialize() {
       result=null;
-      visionListeners.add(new Pair<Consumer<Pose2d>,Double>((Pose2d visionMeasurement)->{
+      visionListeners.add(new Pair<>((Pose2d visionMeasurement) -> {
         doWithResult.accept(visionMeasurement);
         result = visionMeasurement;
-      }, (double) (RobotController.getFPGATime()/1000)));
+      }, (double) (RobotController.getFPGATime() / 1000)));
     }
 
     @Override
@@ -265,7 +236,6 @@ public class Drivetrain extends SubsystemBase {
     }
   }
   public Command getVisionResetCommand(){
-
     return new WaitForVision((Pose2d pose)->{
       resetNextTick=pose;
     });
@@ -273,7 +243,6 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    //m_odometry.update(m_gyro.getRotation2d(),getWheelSpeeds(),  m_leftEncoder.getDistance(), m_rightEncoder.getDistance());
     m_odometry.update(m_gyro.getRotation2d(), m_leftEncoder.getDistance(), m_rightEncoder.getDistance());
 
     // Also update the Field2D object (so that we can visualize this in sim)
@@ -287,16 +256,8 @@ public class Drivetrain extends SubsystemBase {
     m_field2d.getObject("line").setPose(pose);
 
     if(resetNextTick != null){
-      /*
-      resetEncoders();
-
-      m_odometry = new DifferentialDrivePoseEstimator(m_gyro.getRotation2d(),
-              resetNextTick,
-              stateStdDevs, localMeasurementStdDevs, visionMeasurementStdDevs);*/
       setPose(resetNextTick);
       resetNextTick=null;
     }
   }
-
-
 }

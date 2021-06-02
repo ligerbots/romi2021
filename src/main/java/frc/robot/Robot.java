@@ -56,9 +56,6 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     m_robotContainer.getDriveTrain().getVisionResetCommand().schedule();
-    m_robotContainer.getOnBoardIO().setIntakeServo(false);
-    m_robotContainer.getOnBoardIO().setKickerServo(false);
-    m_robotContainer.getOnBoardIO().setIntakeServo(false);
   }
 
   @Override
@@ -76,6 +73,10 @@ public class Robot extends TimedRobot {
         if(autoCmdInt instanceof Plottable) ((Plottable) autoCmdInt).plotTrajectory(m_robotContainer.m_plotter);
       }
     }
+
+    m_robotContainer.getOnBoardIO().setIntakeServo(false);
+    m_robotContainer.getOnBoardIO().setKickerServo(false);
+    m_robotContainer.getOnBoardIO().setIntakeServo(false);
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
