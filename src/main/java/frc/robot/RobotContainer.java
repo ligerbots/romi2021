@@ -83,8 +83,15 @@ public class RobotContainer {
 
 
     // Setup SmartDashboard options
-    m_chooser.setDefaultOption("Kick", new Kick(m_drivetrain, grid(9,5), grid(1,5.5)));
+    m_chooser.setDefaultOption("PIDTrack", new PIDTrack(m_drivetrain,grid(3,5)));
+    m_chooser.addOption("PIDLine", new PIDLine(m_drivetrain,0.5));
+    m_chooser.addOption("TurnMoveTest", new TurnMoveTest(m_drivetrain));
+    m_chooser.addOption("Pursuittest", new PursuitTest(m_drivetrain));
+
+    m_chooser.addOption("Pursuit", new Pursuit(m_drivetrain,grid(3,5)));
+    m_chooser.addOption("Kick", new Kick(m_drivetrain, grid(9,5), grid(1,5.5)));
     m_chooser.addOption("Alliance Antics Auto", new AllianceAnticsAuto(m_drivetrain, m_onboardIO));
+    m_chooser.addOption("Alliance Antics Auto Jack", new AllianceAnticsAutoJack(m_drivetrain, m_onboardIO));
     m_chooser.addOption("Auto Reset Ramsete", new TargetAutoRamsete(
             m_drivetrain,
             new Pose2d(Units.inchesToMeters(15./2),Units.inchesToMeters(15+15./2),new Rotation2d(0))

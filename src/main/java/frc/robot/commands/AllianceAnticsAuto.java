@@ -57,7 +57,7 @@ public class AllianceAnticsAuto extends SequentialCommandGroup implements AutoCo
                 .addConstraint(centripetalAccelerationConstraint).setReversed(true);
 
 
-        double correctDrift = -0.5;
+        double correctDrift = -0;
         this.addRequirements(driveTrain);
         addCommands(
                 driveTrain.new WaitForVision(driveTrain::setPose),

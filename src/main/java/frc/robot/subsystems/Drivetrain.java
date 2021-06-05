@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -27,9 +28,93 @@ import frc.robot.Constants;
 import frc.robot.sensors.RomiGyro;
 import org.ejml.simple.SimpleMatrix;
 
-import java.util.ArrayList;
-import java.util.ListIterator;
+import java.util.*;
 import java.util.function.Consumer;
+
+class DelayedVisionOdometry{
+  DifferentialDriveOdometry odometry;
+  Pose2d[] pastOdometryPoses; //circular buffer for poses
+  ArrayList<Pair<Double, Pose2d>> pastVisionMeasurements; //millis
+  int nextIndex;
+  double updatePeriod;
+  Pose2d pose;
+  DelayedVisionOdometry(Rotation2d gyroAngle, double maxDelaySeconds, double updatePeriod){
+    odometry= new DifferentialDriveOdometry(gyroAngle);
+    pastVisionMeasurements = new ArrayList<>();
+    this.updatePeriod=updatePeriod;
+    pastOdometryPoses = new Pose2d[(int)(maxDelaySeconds/updatePeriod)];
+    pose = new Pose2d();
+  }
+  public Pose2d update(Rotation2d gyroAngle, double leftDistanceMeters, double rightDistanceMeters) {
+    Pose2d currentOdometryPose = odometry.update(gyroAngle, leftDistanceMeters, rightDistanceMeters);
+    pastOdometryPoses[nextIndex]=currentOdometryPose;
+    nextIndex++;
+    if(nextIndex>=pastOdometryPoses.length)nextIndex=0;
+    pose = estimatePosition();
+    return(getPoseMeters());
+  }
+  public void resetPosition(Pose2d poseMeters, Rotation2d gyroAngle) {
+    odometry.resetPosition(poseMeters, gyroAngle);
+    pose = poseMeters;
+    Arrays.fill(pastOdometryPoses, null);
+    pastVisionMeasurements.clear();
+  }
+  public Pose2d getPoseMeters() {
+    return pose;
+  }
+  public void addVisionMeasurement(double timeStampMillis, Pose2d pose){
+    pastVisionMeasurements.add(new Pair<>(timeStampMillis, pose));
+    if(pastVisionMeasurements.size()>3){
+      pastVisionMeasurements.remove(0);
+    }
+  }
+  Pose2d getPastOdometryPose(double secondsAgo){
+    if(secondsAgo > updatePeriod* pastOdometryPoses.length) return null;
+    int updatesAgo = (int) (secondsAgo/updatePeriod);
+    if(updatesAgo >= pastOdometryPoses.length) return null; //too old, not stored
+    int index = nextIndex -1 - updatesAgo;
+    if(index<0) index+=pastOdometryPoses.length;
+    return(pastOdometryPoses[index]);
+  }
+  Pose2d estimatePosition(){
+    int numberSamples =0;
+    double x = 0;
+    double y = 0;
+    double rotx = 0;
+    double roty = 0;
+    Pose2d currentOdometryPose = odometry.getPoseMeters();
+
+    for (Pair<Double, Pose2d> pastVisionMeasurement : pastVisionMeasurements) {
+
+      Pose2d pastOdometryPose = getPastOdometryPose((RobotController.getFPGATime() / 1000.0-pastVisionMeasurement.getFirst())/1000);
+      if(pastOdometryPose == null) continue;
+      Transform2d pastToCurrent = new Transform2d(pastOdometryPose, currentOdometryPose);
+      Pose2d currentEstimatedVision = pastVisionMeasurement.getSecond().transformBy(pastToCurrent);
+      x+= currentEstimatedVision.getX();
+      y+=currentEstimatedVision.getY();
+      rotx+=currentEstimatedVision.getRotation().getCos();
+      roty+=currentEstimatedVision.getRotation().getSin();
+      numberSamples++;
+      //System.out.println("EST: " +currentEstimatedVision);
+
+    }
+    //System.out.println("EST POS: " +numberSamples);
+
+    if(numberSamples > 0){
+      x/=numberSamples;
+      y/=numberSamples;
+      rotx/=numberSamples;
+      roty/=numberSamples;
+      Pose2d res = new Pose2d(x,y,new Rotation2d(rotx,roty));
+      //System.out.println("RES: " +res);
+
+      return res;
+    }else{
+      return currentOdometryPose;
+
+    }
+  }
+}
 
 public class Drivetrain extends SubsystemBase {
   private static final double kCountsPerRevolution = 1440.0;
@@ -47,8 +132,9 @@ public class Drivetrain extends SubsystemBase {
 
   // Set up the differential drive controller
   private final DifferentialDrive m_diffDrive = new DifferentialDrive(m_leftMotor, m_rightMotor);
-  //private DifferentialDrivePoseEstimator m_odometry;
-  private DifferentialDriveOdometry m_odometry;
+
+  private DelayedVisionOdometry m_odometry;
+  //private DifferentialDriveOdometry m_odometry;
 
   // Set up the RomiGyro
   private final RomiGyro m_gyro = new RomiGyro();
@@ -67,13 +153,14 @@ public class Drivetrain extends SubsystemBase {
     m_rightEncoder.setDistancePerPulse((Math.PI * kWheelDiameterMeter) / kCountsPerRevolution);
     resetEncoders();
 
-    m_odometry = new DifferentialDriveOdometry(m_gyro.getRotation2d());
-
+    //m_odometry = new DifferentialDriveOdometry(m_gyro.getRotation2d());
+    m_odometry=new DelayedVisionOdometry(m_gyro.getRotation2d(),1,0.02);
     SmartDashboard.putData("field", m_field2d);
   }
 
   public Pose2d getPose() {
     return m_odometry.getPoseMeters();
+
   }
 
   public void setPose(Pose2d pose) {
@@ -88,6 +175,7 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void arcadeDrive(double xaxisSpeed, double zaxisRotate) {
+    //m_diffDrive.setDeadband(0.001);
     m_diffDrive.arcadeDrive(xaxisSpeed, zaxisRotate, false);
   }
 
@@ -194,6 +282,7 @@ public class Drivetrain extends SubsystemBase {
     m_gyro.reset();
   }
 
+
   ArrayList<Pair<Consumer<Pose2d>,Double>> visionListeners = new ArrayList<>();
   public void addVisionSample(Pose2d pose, double timestamp){
     ListIterator<Pair<Consumer<Pose2d>,Double>> iter = visionListeners.listIterator();
@@ -206,6 +295,7 @@ public class Drivetrain extends SubsystemBase {
         //System.out.println("Vision measurement too old need:"+listenerEntry.getSecond()+" it " +timestamp);
       }
     }
+    m_odometry.addVisionMeasurement(timestamp,pose);
     lastVisionPosition=pose;
   }
   public class WaitForVision extends CommandBase {

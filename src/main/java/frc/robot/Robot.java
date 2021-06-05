@@ -118,7 +118,7 @@ public class Robot extends TimedRobot {
     io.setIntakeServo(xbox.getBButton());
     io.setBattery(xbox.getXButton());
     Drivetrain drivetrain = m_robotContainer.getDriveTrain();
-    if(drivetrain.lastVisionPosition!=null)drivetrain.setPose(drivetrain.lastVisionPosition);
+    //if(drivetrain.lastVisionPosition!=null)drivetrain.setPose(drivetrain.lastVisionPosition);
   }
 
   @Override
