@@ -113,10 +113,9 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     OnBoardIO io = m_robotContainer.getOnBoardIO();
-    XboxController xbox = m_robotContainer.getXbox();
-    io.setKickerServo(xbox.getAButton());
-    io.setIntakeServo(xbox.getBButton());
-    io.setBattery(xbox.getXButton());
+    io.setKickerServo(m_robotContainer.kickerPressed());
+    io.setIntakeServo(m_robotContainer.intakePressed());
+    io.setBattery(m_robotContainer.batteryPressed());
     Drivetrain drivetrain = m_robotContainer.getDriveTrain();
     //if(drivetrain.lastVisionPosition!=null)drivetrain.setPose(drivetrain.lastVisionPosition);
   }

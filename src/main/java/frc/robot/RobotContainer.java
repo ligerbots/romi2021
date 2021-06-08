@@ -44,6 +44,7 @@ public class RobotContainer {
 
   // Create SmartDashboard chooser for autonomous routines
   private final SendableChooser<AutoCommandInterface> m_chooser = new SendableChooser<>();
+  private final SendableChooser<String> input_mode = new SendableChooser<>();
   TrajectoryPlotter m_plotter = new TrajectoryPlotter(m_drivetrain.getField2d());
 
 
@@ -98,10 +99,39 @@ public class RobotContainer {
     ));
     m_chooser.addOption("Vision test", new VisionTest(m_drivetrain));
     m_chooser.addOption("Vision Calib", new VisionCalib(m_drivetrain));
+
+    input_mode.setDefaultOption("Keyboard","keyboard");
+    input_mode.addOption("xbox","xbox");
     SmartDashboard.putData(m_chooser);
+    SmartDashboard.putData(input_mode);
   }
-  public XboxController getXbox(){
+
+  /*public XboxController getXbox(){
     return m_xbox;
+  }*/
+  public boolean kickerPressed(){
+    if(input_mode.getSelected().equals("keyboard")){
+      return(m_xbox.getAButton());
+    }else if(input_mode.getSelected().equals("xbox")){
+      return(m_xbox.getTriggerAxis(Hand.kRight)>0.5);
+    }
+    return false;
+  }
+  public boolean intakePressed(){
+    if(input_mode.getSelected().equals("keyboard")){
+      return(m_xbox.getBButton());
+    }else if(input_mode.getSelected().equals("xbox")){
+      return(m_xbox.getTriggerAxis(Hand.kLeft)>0.5);
+    }
+    return false;
+  }
+  public boolean batteryPressed(){
+    if(input_mode.getSelected().equals("keyboard")){
+      return(m_xbox.getXButton());
+    }else if(input_mode.getSelected().equals("xbox")){
+      return(m_xbox.getXButton());
+    }
+    return false;
   }
   public Drivetrain getDriveTrain() {
     return m_drivetrain;
@@ -126,6 +156,23 @@ public class RobotContainer {
    */
   public Command getArcadeDriveCommand() {
     return new ArcadeDrive(
-        m_drivetrain, () -> -m_xbox.getY(Hand.kLeft), () -> m_xbox.getX(Hand.kLeft));
+            m_drivetrain,
+            () -> {
+              if(input_mode.getSelected().equals("keyboard")) {
+                return (-m_xbox.getY(Hand.kLeft));
+              }else if(input_mode.getSelected().equals("xbox")){
+                return (-m_xbox.getY(Hand.kLeft));
+              }
+              return 0.;
+            },
+            () -> {
+              if(input_mode.getSelected().equals("keyboard")) {
+                return (m_xbox.getX(Hand.kLeft));
+              }else if(input_mode.getSelected().equals("xbox")){
+                return (m_xbox.getX(Hand.kRight));
+              }
+              return 0.;
+            }
+    );
   }
 }
