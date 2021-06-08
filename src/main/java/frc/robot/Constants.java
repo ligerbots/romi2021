@@ -34,5 +34,7 @@ public final class Constants {
 
     // RAMSETE PARAMETERS
     public static final double kRamseteB = 2; // generic ramsete values
-    public static final double kRamseteZeta = .7; // generic ramsete values
+    public static final double kRamseteZeta = 0.7; // generic ramsete values
+    public static final double kRamseteBLine = 2; // generic ramsete values
+    public static final double kRamseteZetaLine = 5; // generic ramsete values
 }
