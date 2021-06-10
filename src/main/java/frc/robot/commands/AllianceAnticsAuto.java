@@ -35,7 +35,7 @@ public class AllianceAnticsAuto extends SequentialCommandGroup implements AutoCo
     private final Pose2d m_initialPose = null;
     Drivetrain driveTrain;
     OnBoardIO onBoardIO;
-    public AllianceAnticsAuto(Drivetrain driveTrain, OnBoardIO onBoardIO) {
+    public AllianceAnticsAuto(Drivetrain driveTrain, OnBoardIO onBoardIO, TrajectoryPlotter plotter) {
 
         this.driveTrain=driveTrain;
         this.onBoardIO=onBoardIO;
@@ -81,6 +81,8 @@ public class AllianceAnticsAuto extends SequentialCommandGroup implements AutoCo
                             List.of(),
                             new Pose2d(grid(9, 5), Rotation2d.fromDegrees(180)),
                             configForward);
+                    plotter.clear();
+                    plotter.plotTrajectory(trajectory);
                     return(addIntakeCommands(generateRamseteCommand(trajectory,true),grid2m(9+ballforward), trajectory.getTotalTimeSeconds()));
                 }),
 
@@ -92,6 +94,7 @@ public class AllianceAnticsAuto extends SequentialCommandGroup implements AutoCo
                             List.of(),
                             new Pose2d(grid(6, 5), Rotation2d.fromDegrees(180)),
                             configForward);
+                    plotter.addTrajectory(trajectory);
                     return(addIntakeCommands(generateRamseteCommand(trajectory,true),grid2m(6+ballforward), trajectory.getTotalTimeSeconds()));
                 }),
 
@@ -102,6 +105,8 @@ public class AllianceAnticsAuto extends SequentialCommandGroup implements AutoCo
                             List.of(),
                             new Pose2d(grid(3, 5), Rotation2d.fromDegrees(180)),
                             configForward);
+                    plotter.addTrajectory(trajectory);
+
                     return(addIntakeCommands(generateRamseteCommand(trajectory,true),grid2m(3+ballforward), trajectory.getTotalTimeSeconds()));
                 }),
 
@@ -113,6 +118,8 @@ public class AllianceAnticsAuto extends SequentialCommandGroup implements AutoCo
                             List.of(),
                             new Pose2d(grid(2, 5.5), Rotation2d.fromDegrees(180)),
                             configForwardSlow);
+                    plotter.addTrajectory(trajectory);
+
                     return(generateRamseteCommand(trajectory,false));
                 }),
                 /*
@@ -130,17 +137,19 @@ public class AllianceAnticsAuto extends SequentialCommandGroup implements AutoCo
                 driveTrain.new WaitForVision(driveTrain::setPose),
 
                 new InstantSuppliedCommand(()-> {
-                    Trajectory trajectory2 = TrajectoryGenerator.generateTrajectory(
+                    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
                             driveTrain.getPose(),
                             List.of(
-                                    grid(3, 4.2),
-                                    grid(2.8, 3.3),
-                                    grid( 2, 3)
+                                    grid(2.7, 4),
+                                    grid(2.3, 3.3),
+                                    grid( 2, 3.2)
 
                             ),
-                            new Pose2d(grid(1, 2.9), Rotation2d.fromDegrees(0)),
+                            new Pose2d(grid(1, 3.1), Rotation2d.fromDegrees(0)),
                             configBackwardsSlow);
-                    return(generateRamseteCommand(trajectory2,false));
+                    plotter.addTrajectory(trajectory);
+
+                    return(generateRamseteCommand(trajectory,false));
                 }),
                 new InstantCommand(() -> driveTrain.tankDriveVolts(0, 0) )
         );

@@ -32,15 +32,14 @@ public class AllianceAnticsAutoJack extends SequentialCommandGroup implements Au
     private final Pose2d m_initialPose = null;
     Drivetrain driveTrain;
     OnBoardIO onBoardIO;
-    public AllianceAnticsAutoJack(Drivetrain driveTrain, OnBoardIO onBoardIO) {
+    public AllianceAnticsAutoJack(Drivetrain driveTrain, OnBoardIO onBoardIO, TrajectoryPlotter plotter) {
 
         this.driveTrain=driveTrain;
         this.onBoardIO=onBoardIO;
-        double maxSpeed = 0.3;
-        double maxAccel = 0.3;
+        double maxSpeed = 0.5;
+        double maxAccel = 0.5;
 
         // This will make the robot slow down around turns
-        TrajectoryConstraint centripetalAccelerationConstraint = new CentripetalAccelerationConstraint(1.5);
         TrajectoryConstraint autoVoltageConstraint = new DifferentialDriveVoltageConstraint(
                 new SimpleMotorFeedforward(Constants.ksVolts, Constants.kvVoltSecondsPerMeter, Constants.kaVoltSecondsSquaredPerMeter),
                 Constants.kDriveKinematics,
@@ -48,242 +47,164 @@ public class AllianceAnticsAutoJack extends SequentialCommandGroup implements Au
 
         TrajectoryConfig configForward = new TrajectoryConfig(maxSpeed, maxAccel)
                 .setKinematics(Constants.kDriveKinematics)
-                .addConstraint(autoVoltageConstraint)
-                .addConstraint(centripetalAccelerationConstraint);
+                .addConstraint(autoVoltageConstraint);
 
         TrajectoryConfig configBackwards = new TrajectoryConfig(maxSpeed, maxAccel)
                 .setKinematics(Constants.kDriveKinematics)
-                .addConstraint(autoVoltageConstraint)
-                .addConstraint(centripetalAccelerationConstraint).setReversed(true);
+                .addConstraint(autoVoltageConstraint).setReversed(true);
 
 
 
 
-        boolean goTop = false;
+        this.addRequirements(driveTrain);
+        addCommands(
+                driveTrain.new WaitForVision(this::offsetVisionPose),
+                addIntakeCommands(
+                        new InstantSuppliedCommand(()->{
+                            Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                                    driveTrain.getPose(),
+                                    List.of(),
+                                    new Pose2d(grid(10, 5), Rotation2d.fromDegrees(180)),
+                                    configForward);
+                            plotter.clear();
+                            plotter.plotTrajectory(trajectory);
+                            return(generateRamseteCommand(trajectory));
+                        }),
+                        0.5
+                ),/*
+                driveTrain.new WaitForVision(this::offsetVisionPose),
+                new InstantSuppliedCommand(()->{
+                    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                            driveTrain.getPose(),
+                            List.of(),
+                            new Pose2d(grid(9, 5), Rotation2d.fromDegrees(270)),
+                            configForward);
+                    return(generateRamseteCommand(trajectory));
+                }),
+*/
+                /*
+                driveTrain.new WaitForVision(this::offsetVisionPose),
+                new InstantSuppliedCommand(()->{
+                    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                            driveTrain.getPose(),
+                            List.of(),
+                            new Pose2d(grid(9, 3), Rotation2d.fromDegrees(270)),
+                            configForward);
+                    return(generateRamseteCommand(trajectory));
+                }),
+*/
+                driveTrain.new WaitForVision(this::offsetVisionPose),
+                addIntakeCommands(
+                        new InstantSuppliedCommand(()->{
+                            Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                                    driveTrain.getPose(),
+                                    List.of(),
+                                    new Pose2d(grid(9, 2.3), Rotation2d.fromDegrees(270)),
+                                    configForward);
+                            plotter.addTrajectory(trajectory);
+                            return(generateRamseteCommand(trajectory));
+                        }),
+                        0.5
+                ),
+                /*
+                driveTrain.new WaitForVision(this::offsetVisionPose),
 
-        //  get ball 1 2 3
-        if(goTop){
-            this.addRequirements(driveTrain);
-            addCommands(
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
-                    addIntakeCommands(
-                            new InstantSuppliedCommand(()->{
-                                Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                        driveTrain.getPose(),
-                                        List.of(),
-                                        new Pose2d(grid(9, 5), Rotation2d.fromDegrees(180)),
-                                        configForward);
-                                return(generateRamseteCommand(trajectory));
-                            }),
-                            0.5
-                    ),
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
-                    addIntakeCommands(
-                            new InstantSuppliedCommand(()->{
-                                Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                        driveTrain.getPose(),
-                                        List.of(),
-                                        new Pose2d(grid(6, 5), Rotation2d.fromDegrees(180)),
-                                        configForward);
-                                return(generateRamseteCommand(trajectory));
-                            }),
-                            1
-                    ),
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
-                    addIntakeCommands(
-                            new InstantSuppliedCommand(()->{
-                                Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                        driveTrain.getPose(),
-                                        List.of(),
-                                        new Pose2d(grid(3, 5), Rotation2d.fromDegrees(180)),
-                                        configForward);
-                                return(generateRamseteCommand(trajectory));
-                            }),
-                            1
-                    ),
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
+                new InstantSuppliedCommand(()->{
+                    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                            driveTrain.getPose(),
+                            List.of(),
+                            new Pose2d(grid(9, 1), Rotation2d.fromDegrees(180)),
+                            configForward);
+                    return(generateRamseteCommand(trajectory));
+                }),*/
 
-                    new InstantSuppliedCommand(()->{
-                        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                driveTrain.getPose(),
-                                List.of(),
-                                new Pose2d(grid(2, 5.5), Rotation2d.fromDegrees(180)),
-                                configForward);
-                        return(generateRamseteCommand(trajectory));
-                    }),
+                driveTrain.new WaitForVision(this::offsetVisionPose),
+                addIntakeCommands(
+                        new InstantSuppliedCommand(()->{
+                            Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                                    driveTrain.getPose(),
+                                    List.of(),
+                                    new Pose2d(grid(6, 1), Rotation2d.fromDegrees(180)),
+                                    configForward);
+                            plotter.addTrajectory(trajectory);
+                            return(generateRamseteCommand(trajectory));
+                        }),
+                        0.9
+                ),
 
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
+                driveTrain.new WaitForVision(this::offsetVisionPose),
+                addIntakeCommands(
+                        new InstantSuppliedCommand(()->{
+                            Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                                    driveTrain.getPose(),
+                                    List.of(),
+                                    new Pose2d(grid(3, 1), Rotation2d.fromDegrees(180)),
+                                    configForward);
+                            plotter.addTrajectory(trajectory);
+                            return(generateRamseteCommand(trajectory));
+                        }),
+                        0.9
+                ),
 
-                    new InstantSuppliedCommand(()->{
-                        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                driveTrain.getPose(),
-                                List.of(),
-                                new Pose2d(grid(1.2, 5.5), Rotation2d.fromDegrees(180)),
-                                configForward);
-                        return(generateRamseteCommand(trajectory));
-                    }),
-                    getKickCommand(),
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
+                driveTrain.new WaitForVision(this::offsetVisionPose),
+                new InstantSuppliedCommand(()->{
+                    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                            driveTrain.getPose(),
+                            List.of(
+                                    grid(3.7, 1.2),
+                                    grid(4, 2),
+                                    grid(3.6, 2.8)
+                            ),
+                            new Pose2d(grid(3, 4), Rotation2d.fromDegrees(-90)),
+                            configBackwards);
+                    plotter.addTrajectory(trajectory);
+                    return(generateRamseteCommand(trajectory));
+                }),
 
-                    new InstantSuppliedCommand(()-> {
-                        Trajectory trajectory2 = TrajectoryGenerator.generateTrajectory(
-                                new Pose2d(grid(1, 5.5), Rotation2d.fromDegrees(180)),
-                                List.of(
-                                        grid(2, 5.2),
-                                        grid(3, 4.5),
-                                        grid(2.8, 3.6),
-                                        grid( 2, 3)
+                driveTrain.new WaitForVision(this::offsetVisionPose),
+                new InstantSuppliedCommand(()->{
+                    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                            driveTrain.getPose(),
+                            List.of(
+                                    grid(2.6, 5)
+                            ),
+                            new Pose2d(grid(3, 5.5), Rotation2d.fromDegrees(180)),
+                            configBackwards);
+                    plotter.addTrajectory(trajectory);
+                    return(generateRamseteCommand(trajectory));
+                }),
 
-                                ),
-                                new Pose2d(grid(1, 2.9), Rotation2d.fromDegrees(0)),
-                                configBackwards);
-                        return(generateRamseteCommand(trajectory2));
-                    }),
-                    new InstantCommand(() -> driveTrain.tankDriveVolts(0, 0) )
-            );
-        }
-        //get ball 4 5 6
-        else{
-            this.addRequirements(driveTrain);
-            addCommands(
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
-                    addIntakeCommands(
-                            new InstantSuppliedCommand(()->{
-                                Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                        driveTrain.getPose(),
-                                        List.of(),
-                                        new Pose2d(grid(9, 5), Rotation2d.fromDegrees(180)),
-                                        configForward);
-                                return(generateRamseteCommand(trajectory));
-                            }),
-                            0.5
-                    ),
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
+                driveTrain.new WaitForVision(this::offsetVisionPose),
+                new InstantSuppliedCommand(()->{
+                    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                            driveTrain.getPose(),
+                            List.of(),
+                            new Pose2d(grid(1.2, 5.5), Rotation2d.fromDegrees(180)),
+                            configForward);
+                    plotter.addTrajectory(trajectory);
 
-                    new InstantSuppliedCommand(()->{
-                        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                driveTrain.getPose(),
-                                List.of(),
-                                new Pose2d(grid(9, 5), Rotation2d.fromDegrees(270)),
-                                configForward);
-                        return(generateRamseteCommand(trajectory));
-                    }),
+                    return(generateRamseteCommand(trajectory));
+                }),
+                getKickCommand(),
+                driveTrain.new WaitForVision(this::offsetVisionPose),
 
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
-                    new InstantSuppliedCommand(()->{
-                        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                driveTrain.getPose(),
-                                List.of(),
-                                new Pose2d(grid(9, 3), Rotation2d.fromDegrees(270)),
-                                configForward);
-                        return(generateRamseteCommand(trajectory));
-                    }),
+                new InstantSuppliedCommand(()-> {
+                    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+                            driveTrain.getPose(),
+                            List.of(
+                                    grid(3, 4.5),
+                                    grid(2.8, 3.6),
+                                    grid( 2, 3)
 
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
-                    addIntakeCommands(
-                            new InstantSuppliedCommand(()->{
-                                Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                        driveTrain.getPose(),
-                                        List.of(),
-                                        new Pose2d(grid(9, 1), Rotation2d.fromDegrees(270)),
-                                        configForward);
-                                return(generateRamseteCommand(trajectory));
-                            }),
-                            0.5
-                    ),
+                            ),
+                            new Pose2d(grid(1, 2.9), Rotation2d.fromDegrees(0)),
+                            configBackwards);
+                    plotter.addTrajectory(trajectory);
+                    return(generateRamseteCommand(trajectory));
+                }),
+                new InstantCommand(() -> driveTrain.tankDriveVolts(0, 0) )
+        );
 
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
-
-                    new InstantSuppliedCommand(()->{
-                        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                driveTrain.getPose(),
-                                List.of(),
-                                new Pose2d(grid(9, 1), Rotation2d.fromDegrees(180)),
-                                configForward);
-                        return(generateRamseteCommand(trajectory));
-                    }),
-
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
-                    addIntakeCommands(
-                            new InstantSuppliedCommand(()->{
-                                Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                        driveTrain.getPose(),
-                                        List.of(),
-                                        new Pose2d(grid(6, 1), Rotation2d.fromDegrees(180)),
-                                        configForward);
-                                return(generateRamseteCommand(trajectory));
-                            }),
-                            0.9
-                    ),
-
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
-                    addIntakeCommands(
-                            new InstantSuppliedCommand(()->{
-                                Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                        driveTrain.getPose(),
-                                        List.of(),
-                                        new Pose2d(grid(3, 1), Rotation2d.fromDegrees(180)),
-                                        configForward);
-                                return(generateRamseteCommand(trajectory));
-                            }),
-                            0.9
-                    ),
-
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
-                    new InstantSuppliedCommand(()->{
-                        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                driveTrain.getPose(),
-                                List.of(
-                                        grid(3.7, 1.2),
-                                        grid(4, 2),
-                                        grid(3.6, 2.8)
-                                ),
-                                new Pose2d(grid(3, 4), Rotation2d.fromDegrees(90)),
-                                configBackwards);
-                        return(generateRamseteCommand(trajectory));
-                    }),
-
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
-                    new InstantSuppliedCommand(()->{
-                        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                driveTrain.getPose(),
-                                List.of(
-                                        grid(2.6, 5)
-                                ),
-                                new Pose2d(grid(3, 5.5), Rotation2d.fromDegrees(180)),
-                                configBackwards);
-                        return(generateRamseteCommand(trajectory));
-                    }),
-
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
-                    new InstantSuppliedCommand(()->{
-                        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-                                driveTrain.getPose(),
-                                List.of(),
-                                new Pose2d(grid(1.2, 5.5), Rotation2d.fromDegrees(180)),
-                                configForward);
-                        return(generateRamseteCommand(trajectory));
-                    }),
-                    getKickCommand(),
-                    driveTrain.new WaitForVision(this::offsetVisionPose),
-
-                    new InstantSuppliedCommand(()-> {
-                        Trajectory trajectory2 = TrajectoryGenerator.generateTrajectory(
-                                new Pose2d(grid(1, 5.5), Rotation2d.fromDegrees(180)),
-                                List.of(
-                                        grid(2, 5.2),
-                                        grid(3, 4.5),
-                                        grid(2.8, 3.6),
-                                        grid( 2, 3)
-
-                                ),
-                                new Pose2d(grid(1, 2.9), Rotation2d.fromDegrees(0)),
-                                configBackwards);
-                        return(generateRamseteCommand(trajectory2));
-                    }),
-                    new InstantCommand(() -> driveTrain.tankDriveVolts(0, 0) )
-            );
-        }
     }
     void offsetVisionPose(Pose2d original){
         driveTrain.setPose(new Pose2d(original.getX(),original.getY()-.05,original.getRotation()));
@@ -292,7 +213,7 @@ public class AllianceAnticsAutoJack extends SequentialCommandGroup implements Au
         return(new RamseteCommand(
                 trajectory,
                 driveTrain::getPose,
-                new RamseteController(Constants.kRamseteB, Constants.kRamseteZeta),
+                new RamseteController(Constants.kRamseteBLine, Constants.kRamseteZetaLine),
                 new SimpleMotorFeedforward(Constants.ksVolts,
                         Constants.kvVoltSecondsPerMeter,
                         Constants.kaVoltSecondsSquaredPerMeter),

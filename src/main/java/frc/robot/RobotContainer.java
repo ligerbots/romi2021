@@ -91,8 +91,8 @@ public class RobotContainer {
 
     m_chooser.addOption("Pursuit", new Pursuit(m_drivetrain,grid(3,5)));
     m_chooser.addOption("Kick", new Kick(m_drivetrain, grid(9,5), grid(1,5.5)));
-    m_chooser.setDefaultOption("Alliance Antics Auto", new AllianceAnticsAuto(m_drivetrain, m_onboardIO));
-    m_chooser.addOption("Alliance Antics Auto Jack", new AllianceAnticsAutoJack(m_drivetrain, m_onboardIO));
+    m_chooser.addOption("Alliance Antics Auto", new AllianceAnticsAuto(m_drivetrain, m_onboardIO, m_plotter));
+    m_chooser.setDefaultOption("Alliance Antics Auto Jack", new AllianceAnticsAutoJack(m_drivetrain, m_onboardIO, m_plotter));
     m_chooser.addOption("Auto Reset Ramsete", new TargetAutoRamsete(
             m_drivetrain,
             new Pose2d(Units.inchesToMeters(15./2),Units.inchesToMeters(15+15./2),new Rotation2d(0))

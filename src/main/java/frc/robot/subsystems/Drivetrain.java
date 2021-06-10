@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Spark;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Transform2d;
@@ -21,33 +20,55 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import edu.wpi.first.wpiutil.math.Matrix;
 import edu.wpi.first.wpiutil.math.Pair;
-import edu.wpi.first.wpiutil.math.numbers.*;
-import frc.robot.Constants;
 import frc.robot.sensors.RomiGyro;
-import org.ejml.simple.SimpleMatrix;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 class DelayedVisionOdometry{
   DifferentialDriveOdometry odometry;
-  Pose2d[] pastOdometryPoses; //circular buffer for poses
-  ArrayList<Pair<Double, Pose2d>> pastVisionMeasurements; //millis
+  OdometrySample[] pastOdometryPoses; //circular buffer for poses
+  ArrayList<VisionSample> pastVisionMeasurements; //millis
+  Supplier<Double> speedSupplier;
   int nextIndex;
   double updatePeriod;
   Pose2d pose;
-  DelayedVisionOdometry(Rotation2d gyroAngle, double maxDelaySeconds, double updatePeriod){
+  static class OdometrySample {
+    Pose2d pose;
+
+    double speed;
+
+    OdometrySample(Pose2d pose, double speed){
+      this.pose=pose;
+      this.speed=speed;
+
+    }
+  }
+  static class VisionSample{
+    double timeStampMillis;
+    Pose2d pastVisionPose;
+    Pose2d pastOdometryPose;
+    VisionSample(double timeStampMillis, Pose2d pastVisionPose, Pose2d pastOdometryPose){
+      this.timeStampMillis=timeStampMillis;
+      this.pastVisionPose=pastVisionPose;
+      this.pastOdometryPose=pastOdometryPose;
+    }
+  }
+  DelayedVisionOdometry(Rotation2d gyroAngle, double maxDelaySeconds, double updatePeriod, Supplier<Double> speedSupplier){
     odometry= new DifferentialDriveOdometry(gyroAngle);
     pastVisionMeasurements = new ArrayList<>();
     this.updatePeriod=updatePeriod;
-    pastOdometryPoses = new Pose2d[(int)(maxDelaySeconds/updatePeriod)];
+    pastOdometryPoses = new OdometrySample[(int)(maxDelaySeconds/updatePeriod)];
     pose = new Pose2d();
+    this.speedSupplier=speedSupplier;
   }
   public Pose2d update(Rotation2d gyroAngle, double leftDistanceMeters, double rightDistanceMeters) {
     Pose2d currentOdometryPose = odometry.update(gyroAngle, leftDistanceMeters, rightDistanceMeters);
-    pastOdometryPoses[nextIndex]=currentOdometryPose;
+
+    pastOdometryPoses[nextIndex]=new OdometrySample(currentOdometryPose, speedSupplier.get());
+    System.out.println("SPEED "+pastOdometryPoses[nextIndex].speed);
     nextIndex++;
     if(nextIndex>=pastOdometryPoses.length)nextIndex=0;
     pose = estimatePosition();
@@ -63,12 +84,17 @@ class DelayedVisionOdometry{
     return pose;
   }
   public void addVisionMeasurement(double timeStampMillis, Pose2d pose){
-    pastVisionMeasurements.add(new Pair<>(timeStampMillis, pose));
-    if(pastVisionMeasurements.size()>3){
-      pastVisionMeasurements.remove(0);
+    OdometrySample pastOdometry = getPastOdometryPose(
+            (RobotController.getFPGATime() / 1000.0-timeStampMillis)/1000
+    );
+    if(pastOdometry!=null && pastOdometry.speed<0.2){
+      pastVisionMeasurements.add(new VisionSample(timeStampMillis, pose, pastOdometry.pose));
+      if(pastVisionMeasurements.size()>10){
+        pastVisionMeasurements.remove(0);
+      }
     }
   }
-  Pose2d getPastOdometryPose(double secondsAgo){
+  OdometrySample getPastOdometryPose(double secondsAgo){
     if(secondsAgo > updatePeriod* pastOdometryPoses.length) return null;
     int updatesAgo = (int) (secondsAgo/updatePeriod);
     if(updatesAgo >= pastOdometryPoses.length) return null; //too old, not stored
@@ -84,12 +110,11 @@ class DelayedVisionOdometry{
     double roty = 0;
     Pose2d currentOdometryPose = odometry.getPoseMeters();
 
-    for (Pair<Double, Pose2d> pastVisionMeasurement : pastVisionMeasurements) {
+    for (VisionSample pastVisionMeasurement : pastVisionMeasurements) {
 
-      Pose2d pastOdometryPose = getPastOdometryPose((RobotController.getFPGATime() / 1000.0-pastVisionMeasurement.getFirst())/1000);
-      if(pastOdometryPose == null) continue;
+      Pose2d pastOdometryPose=pastVisionMeasurement.pastOdometryPose;
       Transform2d pastToCurrent = new Transform2d(pastOdometryPose, currentOdometryPose);
-      Pose2d currentEstimatedVision = pastVisionMeasurement.getSecond().transformBy(pastToCurrent);
+      Pose2d currentEstimatedVision = pastVisionMeasurement.pastVisionPose.transformBy(pastToCurrent);
       x+= currentEstimatedVision.getX();
       y+=currentEstimatedVision.getY();
       rotx+=currentEstimatedVision.getRotation().getCos();
@@ -106,10 +131,12 @@ class DelayedVisionOdometry{
       rotx/=numberSamples;
       roty/=numberSamples;
       Pose2d res = new Pose2d(x,y,new Rotation2d(rotx,roty));
-      //System.out.println("RES: " +res);
+      System.out.println("uSING VISION ");
 
       return res;
     }else{
+      System.out.println("uSING NONE ");
+
       return currentOdometryPose;
 
     }
@@ -154,7 +181,9 @@ public class Drivetrain extends SubsystemBase {
     resetEncoders();
 
     //m_odometry = new DifferentialDriveOdometry(m_gyro.getRotation2d());
-    m_odometry=new DelayedVisionOdometry(m_gyro.getRotation2d(),1,0.02);
+    m_odometry=new DelayedVisionOdometry(m_gyro.getRotation2d(),5,0.02,()->{
+      return(Math.abs(m_leftEncoder.getRate())+Math.abs(m_rightEncoder.getRate()));
+    });
     SmartDashboard.putData("field", m_field2d);
   }
 

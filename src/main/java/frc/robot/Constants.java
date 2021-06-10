@@ -33,8 +33,8 @@ public final class Constants {
     public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);
 
     // RAMSETE PARAMETERS
-    public static final double kRamseteB = 2; // generic ramsete values
-    public static final double kRamseteZeta = 0.7; // generic ramsete values
-    public static final double kRamseteBLine = 2; // generic ramsete values
-    public static final double kRamseteZetaLine = 5; // generic ramsete values
+    public static final double kRamseteB = 5; // generic ramsete values
+    public static final double kRamseteZeta = 1; // generic ramsete values
+    public static final double kRamseteBLine = 50; // generic ramsete values
+    public static final double kRamseteZetaLine = 0.7; // generic ramsete values
 }
