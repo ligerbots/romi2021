@@ -21,7 +21,7 @@ world_position = np.array([
     [-side_length/2, 0, -side_length/2],
 ])
 
-ceil_cam_height = 103
+ceil_cam_height = 7.48*12 #103
 
 scale_x = 1/ceil_cam_height* camera_matrix[0,0]
 scale_y = 1/ceil_cam_height* camera_matrix[1,1]
@@ -92,7 +92,8 @@ def process_image_2d(frame):
             img_pos.append(corners_undistort[i])
 
             world_pos.append(real_positions[markerID][i]*[scale_x,0,scale_y])
-
+    if(len(img_pos)<12):
+        return((None, None))
     world_pos = np.array(world_pos)[:,[True,False,True]]
     img_pos = np.array(img_pos)
     R, d = find_rigid_transform(world_pos, img_pos)

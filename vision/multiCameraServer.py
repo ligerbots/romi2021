@@ -193,7 +193,7 @@ def startSwitchedCamera(config):
         if isinstance(value, float):
             i = int(value)
             if i >= 0 and i < len(cameras):
-              server.setSource(cameras[i])
+                server.setSource(cameras[i])
         elif isinstance(value, str):
             for i in range(len(cameraConfigs)):
                 if value == cameraConfigs[i].name:
@@ -242,8 +242,8 @@ if __name__ == "__main__":
     height, width, _ = sink.grabFrame(None,1)[1].shape
 
     output_stream = cscore.CvSource('camera', cscore.VideoMode.PixelFormat.kMJPEG,
-                                             width, height,
-                                             10)
+                                    width, height,
+                                    10)
     cameraserver.addCamera(output_stream)
     server = cameraserver.addServer(name='camera', port=int(1190))
     server.setCompression(80)
